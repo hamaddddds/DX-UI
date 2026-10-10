@@ -1,5 +1,5 @@
 local DX = {
-    Version = "0.0.0.3",
+    Version = "0.0.0.4",
     Flags = {},
     Themes = {},
     Theme = "DX-SR",
@@ -19,7 +19,7 @@ DX.Glass = false
 DX.ClickSound = "rbxassetid://15675032796"
 DX.ClickVolume = 0.5
 
-local FONT_FAMILY = "rbxasset://fonts/families/GothamSSm.json"
+local FONT_FAMILY = "rbxasset://fonts/families/Montserrat.json"
 local Weight = Enum.FontWeight
 local AutoX = Enum.AutomaticSize.X
 local AutoY = Enum.AutomaticSize.Y
@@ -27,7 +27,7 @@ local Horizontal = Enum.FillDirection.Horizontal
 local Round = UDim.new(1, 0)
 
 local function GetFont(weight)
-    return Font.new(FONT_FAMILY, weight or Weight.Regular)
+    return Font.new(FONT_FAMILY, weight or Weight.Medium)
 end
 
 local BaseTheme = {
@@ -39,7 +39,7 @@ local BaseTheme = {
     Accent = Color3.fromHex("#3B82F6"),
     Accent2 = Color3.fromHex("#22D3EE"),
     Text = Color3.fromHex("#EAF0FF"),
-    SubText = Color3.fromHex("#8193BD"),
+    SubText = Color3.fromHex("#9AABD4"),
     Icon = Color3.fromHex("#A7B6DD"),
     Success = Color3.fromHex("#30FF6A"),
     Warning = Color3.fromHex("#FBBF24"),
@@ -57,23 +57,24 @@ DX.Themes.Midnight = Variant({
     Accent = Color3.fromHex("#8B5CF6"), Accent2 = Color3.fromHex("#EC4899"),
     Background = Color3.fromHex("#0E0A1E"),
     Element = Color3.fromHex("#18122F"), ElementHover = Color3.fromHex("#20183D"), Field = Color3.fromHex("#0D0920"),
-    Stroke = Color3.fromHex("#2C2350"), SubText = Color3.fromHex("#9A8CC4"), Icon = Color3.fromHex("#B6A9DE"),
+    Stroke = Color3.fromHex("#2C2350"), SubText = Color3.fromHex("#AFA2D6"), Icon = Color3.fromHex("#B6A9DE"),
 })
 DX.Themes.Emerald = Variant({
     Accent = Color3.fromHex("#10B981"), Accent2 = Color3.fromHex("#A3E635"),
     Background = Color3.fromHex("#08130F"),
     Element = Color3.fromHex("#0F231B"), ElementHover = Color3.fromHex("#142D23"), Field = Color3.fromHex("#081510"),
-    Stroke = Color3.fromHex("#1C3D30"), SubText = Color3.fromHex("#86B5A2"), Icon = Color3.fromHex("#A5D4C0"),
+    Stroke = Color3.fromHex("#1C3D30"), SubText = Color3.fromHex("#9DC9B6"), Icon = Color3.fromHex("#A5D4C0"),
 })
 DX.Themes.Crimson = Variant({
     Accent = Color3.fromHex("#F43F5E"), Accent2 = Color3.fromHex("#FB923C"),
     Background = Color3.fromHex("#140A0D"),
     Element = Color3.fromHex("#221117"), ElementHover = Color3.fromHex("#2B161D"), Field = Color3.fromHex("#12080B"),
-    Stroke = Color3.fromHex("#40202A"), SubText = Color3.fromHex("#C08F9A"), Icon = Color3.fromHex("#DDB0BA"),
+    Stroke = Color3.fromHex("#40202A"), SubText = Color3.fromHex("#D3A5AF"), Icon = Color3.fromHex("#DDB0BA"),
 })
 
-local Themed = setmetatable({}, {__mode = "k"})
+local Themed = {}
 local ThemeHooks = {}
+local GlassTargets = {}
 
 local function CurrentTheme()
     return DX.Themes[DX.Theme] or BaseTheme
@@ -85,15 +86,26 @@ local function Tween(object, time, properties, style, direction)
     return tween
 end
 
+local function ThemeMap(object)
+    local map = Themed[object]
+    if not map then
+        map = {}
+        Themed[object] = map
+        object.Destroying:Once(function()
+            Themed[object] = nil
+            GlassTargets[object] = nil
+        end)
+    end
+    return map
+end
+
 local function Bind(object, property, key)
-    Themed[object] = Themed[object] or {}
-    Themed[object][property] = key
+    ThemeMap(object)[property] = key
     object[property] = CurrentTheme()[key]
 end
 
 local function Retheme(object, property, key, time)
-    Themed[object] = Themed[object] or {}
-    Themed[object][property] = key
+    ThemeMap(object)[property] = key
     Tween(object, time or 0.25, {[property] = CurrentTheme()[key]})
 end
 
@@ -103,7 +115,6 @@ local function OnTheme(hook)
 end
 
 local GlassLevels = {Background = 0.22, Element = 0.5, Field = 0.4}
-local GlassTargets = setmetatable({}, {__mode = "k"})
 local GlassHooks = {}
 
 local function OnGlass(hook)
@@ -656,8 +667,8 @@ local function BaseElement(owner, config, options)
         BackgroundTransparency = 1,
         Parent = header,
     }, {List(3)})
-    local title = Text({Name = "Title", Text = Element.Title, TextSize = 14, FontFace = GetFont(Weight.Medium), Size = UDim2.new(1, 0, 0, 0), AutomaticSize = AutoY, TextWrapped = true, RichText = true, LayoutOrder = 1, Parent = textBlock})
-    local desc = Text({Name = "Desc", Text = Element.Desc or "", TextSize = 12, Theme = {TextColor3 = "SubText"}, Size = UDim2.new(1, 0, 0, 0), AutomaticSize = AutoY, TextWrapped = true, RichText = true, LayoutOrder = 2, Visible = Element.Desc ~= nil and Element.Desc ~= "", Parent = textBlock})
+    local title = Text({Name = "Title", Text = Element.Title, TextSize = 14, FontFace = GetFont(Weight.SemiBold), Size = UDim2.new(1, 0, 0, 0), AutomaticSize = AutoY, TextWrapped = true, RichText = true, LayoutOrder = 1, Parent = textBlock})
+    local desc = Text({Name = "Desc", Text = Element.Desc or "", TextSize = 13, Theme = {TextColor3 = "SubText"}, Size = UDim2.new(1, 0, 0, 0), AutomaticSize = AutoY, TextWrapped = true, RichText = true, LayoutOrder = 2, Visible = Element.Desc ~= nil and Element.Desc ~= "", Parent = textBlock})
     local right = New("Frame", {Name = "Right", AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, 0, 0.5, 0), Size = UDim2.fromOffset(rightWidth, 30), BackgroundTransparency = 1, Parent = header})
     card.MouseEnter:Connect(function()
         if not Element.Locked then Retheme(card, "BackgroundColor3", "ElementHover", 0.2) end
@@ -1381,6 +1392,7 @@ function Elements:Paragraph(config)
     if config.Image and not config.Icon then config.Icon = config.Image end
     local Element = BaseElement(self, config, {})
     Element.Type = "Paragraph"
+    Element.TitleLabel.FontFace = GetFont(Weight.Bold)
     local thumbnail
     if config.Thumbnail and config.Thumbnail ~= "" then
         local thumbHolder = New("Frame", {Name = "Thumbnail", Size = UDim2.new(1, 0, 0, (config.ThumbnailSize or 80) + 12), BackgroundTransparency = 1, LayoutOrder = 2, Parent = Element.Frame}, {Padding(14, 14, 0, 12)})
@@ -1616,13 +1628,17 @@ function DX:CreateWindow(config)
         Color = ColorSequence.new({
             ColorSequenceKeypoint.new(0, Color3.new(1, 1, 1)),
             ColorSequenceKeypoint.new(0.45, Color3.new(1, 1, 1)),
-            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(140, 200, 255)),
+            ColorSequenceKeypoint.new(0.5, Color3.new(1, 1, 1)),
             ColorSequenceKeypoint.new(0.55, Color3.new(1, 1, 1)),
             ColorSequenceKeypoint.new(1, Color3.new(1, 1, 1)),
         }),
         Offset = Vector2.new(-1, 0),
         Parent = titleLabel,
     })
+    OnTheme(function(theme)
+        local keys = titleShine.Color.Keypoints
+        titleShine.Color = ColorSequence.new({keys[1], keys[2], ColorSequenceKeypoint.new(0.5, theme.Accent:Lerp(Color3.new(1, 1, 1), 0.45)), keys[4], keys[5]})
+    end)
     TweenService:Create(titleShine, TweenInfo.new(1.8, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut, -1, false, 2.5), {Offset = Vector2.new(1, 0)}):Play()
     local authorLabel = Text({Name = "Author", Text = config.Author or "", TextSize = 12, Theme = {TextColor3 = "SubText"}, Size = UDim2.fromOffset(0, 15), AutomaticSize = AutoX, LayoutOrder = 2, Visible = (config.Author or "") ~= "", Parent = titleBlock})
     local tags = New("Frame", {Name = "Tags", Size = UDim2.fromOffset(0, 24), AutomaticSize = AutoX, BackgroundTransparency = 1, LayoutOrder = 3, Parent = titleRow}, {List(6, Horizontal, nil, Enum.VerticalAlignment.Center)})

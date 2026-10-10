@@ -22,13 +22,13 @@
   --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
   --f-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
   --dx-bg: #0A0F1E; --dx-el: #111A31; --dx-elh: #17223F; --dx-field: #0A1022; --dx-stroke: #1F2D52;
-  --dx-accent: #3B82F6; --dx-accent2: #22D3EE; --dx-text: #EAF0FF; --dx-sub: #8193BD; --dx-icon: #A7B6DD;
+  --dx-accent: #3B82F6; --dx-accent2: #22D3EE; --dx-text: #EAF0FF; --dx-sub: #9AABD4; --dx-icon: #A7B6DD;
   --dx-ok: #30FF6A; --dx-warn: #FBBF24; --dx-err: #F43F5E;
   color-scheme: dark;
 }
-:root[data-dx="Midnight"] { --dx-bg: #0E0A1E; --dx-el: #18122F; --dx-elh: #20183D; --dx-field: #0D0920; --dx-stroke: #2C2350; --dx-accent: #8B5CF6; --dx-accent2: #EC4899; --dx-sub: #9A8CC4; --dx-icon: #B6A9DE; }
-:root[data-dx="Emerald"] { --dx-bg: #08130F; --dx-el: #0F231B; --dx-elh: #142D23; --dx-field: #081510; --dx-stroke: #1C3D30; --dx-accent: #10B981; --dx-accent2: #A3E635; --dx-sub: #86B5A2; --dx-icon: #A5D4C0; }
-:root[data-dx="Crimson"] { --dx-bg: #140A0D; --dx-el: #221117; --dx-elh: #2B161D; --dx-field: #12080B; --dx-stroke: #40202A; --dx-accent: #F43F5E; --dx-accent2: #FB923C; --dx-sub: #C08F9A; --dx-icon: #DDB0BA; }
+:root[data-dx="Midnight"] { --dx-bg: #0E0A1E; --dx-el: #18122F; --dx-elh: #20183D; --dx-field: #0D0920; --dx-stroke: #2C2350; --dx-accent: #8B5CF6; --dx-accent2: #EC4899; --dx-sub: #AFA2D6; --dx-icon: #B6A9DE; }
+:root[data-dx="Emerald"] { --dx-bg: #08130F; --dx-el: #0F231B; --dx-elh: #142D23; --dx-field: #081510; --dx-stroke: #1C3D30; --dx-accent: #10B981; --dx-accent2: #A3E635; --dx-sub: #9DC9B6; --dx-icon: #A5D4C0; }
+:root[data-dx="Crimson"] { --dx-bg: #140A0D; --dx-el: #221117; --dx-elh: #2B161D; --dx-field: #12080B; --dx-stroke: #40202A; --dx-accent: #F43F5E; --dx-accent2: #FB923C; --dx-sub: #D3A5AF; --dx-icon: #DDB0BA; }
 
 * { box-sizing: border-box; }
 body { background: var(--page); color: var(--ink); font: 15px/1.6 var(--f-body); }
@@ -310,7 +310,7 @@ td { color: var(--muted); }
 <header class="topnav">
   <div class="brand">
     <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#3B82F6"/></linearGradient></defs><path d="M4 6h8.5c6 0 10 4 10 10s-4 10-10 10H4z" fill="none" stroke="url(#g)" stroke-width="3" stroke-linejoin="round"/><path d="M17 6l11 20M28 6L17 26" stroke="url(#g)" stroke-width="3" stroke-linecap="round"/></svg>
-    DX-UI <small>v0.0.0.3</small>
+    DX-UI <small>v0.0.0.4</small>
   </div>
   <div class="themes" role="group" aria-label="Preview theme">
     <button type="button" data-theme-set="DX-SR" aria-pressed="true"><i style="background:linear-gradient(90deg,#3B82F6,#22D3EE)"></i>DX-SR</button>
@@ -368,7 +368,7 @@ td { color: var(--muted); }
             <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><path d="M4 6h8.5c6 0 10 4 10 10s-4 10-10 10H4z" fill="none" stroke="var(--dx-accent2)" stroke-width="3" stroke-linejoin="round"/><path d="M17 6l11 20M28 6L17 26" stroke="var(--dx-accent)" stroke-width="3" stroke-linecap="round"/></svg>
             <div class="win-title"><b>DX-SR Hub</b><span>Professional Hub</span></div>
             <div class="dx-tags">
-              <span class="dx-tag" style="--c:#30FF6A"><i data-lucide="github"></i>v0.0.0.3</span>
+              <span class="dx-tag" style="--c:#30FF6A"><i data-lucide="github"></i>v0.0.0.4</span>
               <span class="dx-tag" style="--c:#FBBF24"><i data-lucide="crown"></i>Premium</span>
             </div>
             <div class="win-ctrl">
@@ -465,7 +465,7 @@ td { color: var(--muted); }
     <section class="doc" id="tag">
       <h2><i data-lucide="tag"></i>Tag</h2>
       <p>Small colored badges next to the window title, for a version number or a plan name. They pop in when created.</p>
-      <div class="stage"><span class="stage-label">Preview</span><div class="dx dx-tags" id="tag-demo"><span class="dx-tag" style="--c:#30FF6A"><i data-lucide="github"></i>v0.0.0.3</span><span class="dx-tag" style="--c:#FBBF24"><i data-lucide="crown"></i>Premium</span><span class="dx-tag" style="--c:#22D3EE"><i data-lucide="sparkles"></i>Beta</span></div></div>
+      <div class="stage"><span class="stage-label">Preview</span><div class="dx dx-tags" id="tag-demo"><span class="dx-tag" style="--c:#30FF6A"><i data-lucide="github"></i>v0.0.0.4</span><span class="dx-tag" style="--c:#FBBF24"><i data-lucide="crown"></i>Premium</span><span class="dx-tag" style="--c:#22D3EE"><i data-lucide="sparkles"></i>Beta</span></div></div>
       <div class="codebox"><pre data-code="tag"></pre></div>
       <div class="methods"><code>:SetTitle(text)</code><code>:SetColor(Color3)</code><code>:Destroy()</code></div>
     </section>
@@ -807,7 +807,7 @@ window: `local Window = DX:CreateWindow({
     ToggleKey = Enum.KeyCode.RightShift,
     Theme = "DX-SR",
 })`,
-tag: `Window:Tag({Title = "v0.0.0.3", Icon = "github", Color = Color3.fromHex("#30FF6A")})
+tag: `Window:Tag({Title = "v0.0.0.4", Icon = "github", Color = Color3.fromHex("#30FF6A")})
 Window:Tag({Title = "Premium", Icon = "crown", Color = Color3.fromHex("#FBBF24")})`,
 tabs: `local Main = Window:Section({Title = "Main", Icon = "house", Opened = true})
 local Farm = Main:Tab({Title = "Farming", Icon = "tractor", Desc = "Automate every job with one click."})
