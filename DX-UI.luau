@@ -1,5 +1,5 @@
 local DX = {
-    Version = "0.0.0.2",
+    Version = "0.0.0.3",
     Flags = {},
     Themes = {},
     Theme = "DX-SR",
@@ -16,6 +16,8 @@ local LocalPlayer = Players.LocalPlayer
 
 DX.IsMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
 DX.Glass = false
+DX.ClickSound = "rbxassetid://15675032796"
+DX.ClickVolume = 0.5
 
 local FONT_FAMILY = "rbxasset://fonts/families/GothamSSm.json"
 local Weight = Enum.FontWeight
@@ -165,8 +167,25 @@ function DX:GetThemes()
     return list
 end
 
+local ClickPlayer
+local function PlayClick()
+    if not DX.ClickSound then return end
+    pcall(function()
+        if not ClickPlayer or not ClickPlayer.Parent then
+            ClickPlayer = Instance.new("Sound")
+            ClickPlayer.Name = "DXClick"
+            ClickPlayer.Parent = game:GetService("SoundService")
+        end
+        ClickPlayer.SoundId = DX.ClickSound
+        ClickPlayer.Volume = DX.ClickVolume
+        ClickPlayer.TimePosition = 0
+        ClickPlayer:Play()
+    end)
+end
+
 local function New(className, properties, children)
     local object = Instance.new(className)
+    if className == "TextButton" or className == "ImageButton" then object.MouseButton1Click:Connect(PlayClick) end
     if properties then
         for key, value in pairs(properties) do
             if key == "Theme" then
@@ -1608,16 +1627,19 @@ function DX:CreateWindow(config)
     local authorLabel = Text({Name = "Author", Text = config.Author or "", TextSize = 12, Theme = {TextColor3 = "SubText"}, Size = UDim2.fromOffset(0, 15), AutomaticSize = AutoX, LayoutOrder = 2, Visible = (config.Author or "") ~= "", Parent = titleBlock})
     local tags = New("Frame", {Name = "Tags", Size = UDim2.fromOffset(0, 24), AutomaticSize = AutoX, BackgroundTransparency = 1, LayoutOrder = 3, Parent = titleRow}, {List(6, Horizontal, nil, Enum.VerticalAlignment.Center)})
 
-    local controls = New("Frame", {Name = "Controls", AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -12, 0.5, 0), Size = UDim2.fromOffset(0, 32), AutomaticSize = AutoX, BackgroundTransparency = 1, Parent = topbar}, {List(4, Horizontal, nil, Enum.VerticalAlignment.Center)})
+    local controls = New("Frame", {Name = "Controls", AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -14, 0.5, 0), Size = UDim2.fromOffset(0, 30), AutomaticSize = AutoX, BackgroundTransparency = 1, Parent = topbar}, {List(6, Horizontal, nil, Enum.VerticalAlignment.Center)})
     local function controlButton(iconName, order, hoverKey)
-        local button = New("TextButton", {Name = iconName, Text = "", AutoButtonColor = false, Size = UDim2.fromOffset(32, 32), Theme = {BackgroundColor3 = hoverKey or "ElementHover"}, BackgroundTransparency = 1, LayoutOrder = order, Parent = controls}, {Corner(8)})
-        local image = Icon(iconName, 16, "SubText", {AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Parent = button})
+        local stroke = Stroke("Stroke")
+        local button = New("TextButton", {Name = iconName, Text = "", AutoButtonColor = false, Size = UDim2.fromOffset(30, 30), Theme = {BackgroundColor3 = "Element"}, LayoutOrder = order, Parent = controls}, {Corner(8), stroke})
+        local image = Icon(iconName, 15, "SubText", {AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Parent = button})
         button.MouseEnter:Connect(function()
-            Tween(button, 0.2, {BackgroundTransparency = hoverKey and 0.75 or 0})
-            if image then Retheme(image, "ImageColor3", hoverKey or "Text", 0.2) end
+            Retheme(button, "BackgroundColor3", hoverKey or "ElementHover", 0.2)
+            Retheme(stroke, "Color", hoverKey or "Accent", 0.2)
+            if image then Retheme(image, "ImageColor3", hoverKey and "Text" or "Accent", 0.2) end
         end)
         button.MouseLeave:Connect(function()
-            Tween(button, 0.2, {BackgroundTransparency = 1})
+            Retheme(button, "BackgroundColor3", "Element", 0.2)
+            Retheme(stroke, "Color", "Stroke", 0.2)
             if image then Retheme(image, "ImageColor3", "SubText", 0.2) end
         end)
         return button, image
