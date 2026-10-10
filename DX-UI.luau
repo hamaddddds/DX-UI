@@ -1,5 +1,5 @@
 local DX = {
-    Version = "0.0.0.1",
+    Version = "0.0.0.2",
     Flags = {},
     Themes = {},
     Theme = "DX-SR",
@@ -11,6 +11,7 @@ local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local HttpService = game:GetService("HttpService")
 local GuiService = game:GetService("GuiService")
+local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
 DX.IsMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
@@ -139,8 +140,22 @@ function DX:SetTheme(name)
     return true
 end
 
+local WindThemeKeys = {Outline = "Stroke", Placeholder = "SubText", Button = "Element"}
+
 function DX:AddTheme(name, theme)
-    DX.Themes[name] = Variant(theme)
+    if type(name) == "table" then
+        theme, name = name, name.Name
+    end
+    local mapped = {}
+    for key, value in pairs(theme or {}) do
+        if typeof(value) == "Color3" then mapped[WindThemeKeys[key] or key] = value end
+    end
+    DX.Themes[name] = Variant(mapped)
+    return name
+end
+
+function DX:GetCurrentTheme()
+    return DX.Theme
 end
 
 function DX:GetThemes()
@@ -483,6 +498,7 @@ local function CreateDialog(gui, config, onClosed)
         end)
     end
     Dialog.Cancel = Dialog.Close
+    function Dialog:Show() return Dialog end
     function Dialog:SetTitle(value) title.Text = value end
     function Dialog:SetContent(value) content.Text = value end
     Dialog.UpdateTitle = Dialog.SetTitle
@@ -611,7 +627,7 @@ local function BaseElement(owner, config, options)
     end
     local left = 0
     if config.Icon and DX:GetIcon(config.Icon) then
-        Icon(config.Icon, 18, "Icon", {Position = UDim2.fromOffset(0, 0), Parent = header})
+        Element.IconImage = Icon(config.Icon, 18, "Icon", {Position = UDim2.fromOffset(0, 0), Parent = header})
         left = 30
     end
     local textBlock = New("Frame", {Name = "Text", 
@@ -688,9 +704,15 @@ function Elements:Section(config)
         Icon(config.Icon, 16, "Accent", {AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 0, 0.5, 0), Parent = header})
         left = 24
     end
-    local title = Text({Text = Section.Title, TextSize = 15, FontFace = GetFont(Weight.SemiBold), Position = UDim2.fromOffset(left, 0), Size = UDim2.new(0, 0, 1, 0), AutomaticSize = AutoX, Parent = header})
+    local title = Text({Text = Section.Title, TextSize = config.TextSize or 15, FontFace = GetFont(Weight.SemiBold), Position = UDim2.fromOffset(left, 0), Size = UDim2.new(0, 0, 1, 0), AutomaticSize = AutoX, Parent = header})
     local line = New("Frame", {Name = "Line", AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -26, 0.5, 0), Size = UDim2.new(1, -200, 0, 1), Theme = {BackgroundColor3 = "Stroke"}, BorderSizePixel = 0, Parent = header})
-    local chevron = Icon("chevron-down", 16, "SubText", {AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, 0, 0.5, 0), Parent = header})
+    local chevron = Icon("chevron-down", 16, "SubText", {AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, 0, 0.5, 0), Visible = false, Parent = header})
+    if config.Box then
+        frame.BackgroundTransparency = 1
+        Corner(12).Parent = frame
+        Stroke("Stroke").Parent = frame
+        Padding(12, 12, 10, 12).Parent = frame
+    end
     local function fitLine()
         line.Size = UDim2.new(1, -(left + title.TextBounds.X / ScaleOf(title) + 40), 0, 1)
     end
@@ -699,6 +721,13 @@ function Elements:Section(config)
     local holder = New("Frame", {Name = "Holder", Size = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1, ClipsDescendants = true, LayoutOrder = 2, Parent = frame})
     local inner = New("Frame", {Name = "Elements", Size = UDim2.new(1, 0, 0, 0), AutomaticSize = AutoY, BackgroundTransparency = 1, Parent = holder}, {Padding(1, 1, 1, 1), List(8)})
     Section.Container = inner
+    local hasContent = false
+    inner.ChildAdded:Connect(function(child)
+        if child:IsA("GuiObject") then
+            hasContent = true
+            if chevron then chevron.Visible = true end
+        end
+    end)
     local animating = false
     local function apply(animate)
         if animate then
@@ -714,6 +743,7 @@ function Elements:Section(config)
         if not animating then apply(false) end
     end)
     header.MouseButton1Click:Connect(function()
+        if not hasContent then return end
         Section.Opened = not Section.Opened
         apply(true)
     end)
@@ -727,16 +757,37 @@ end
 
 function Elements:Toggle(config)
     config = config or {}
-    local Element = BaseElement(self, config, {RightWidth = 46, Button = true})
+    local checkbox = config.Type == "Checkbox"
+    local Element = BaseElement(self, config, {RightWidth = checkbox and 24 or 46, Button = true})
     Element.Type = "Toggle"
     Element.Value = config.Value == true or config.Default == true
-    local track = New("Frame", {Name = "Switch", AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, 0, 0.5, 0), Size = UDim2.fromOffset(46, 24), Theme = {BackgroundColor3 = "Field"}, Parent = Element.Right}, {Corner(Round)})
+    local render
+    if checkbox then
+        local box = New("Frame", {Name = "Checkbox", AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, 0, 0.5, 0), Size = UDim2.fromOffset(24, 24), Theme = {BackgroundColor3 = "Field"}, Parent = Element.Right}, {Corner(7)})
+        local boxStroke = Stroke("Stroke")
+        boxStroke.Parent = box
+        local boxFill = New("Frame", {Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.new(1, 1, 1), BackgroundTransparency = 1, Parent = box}, {Corner(7)})
+        AccentGradient(boxFill, 45)
+        local check = Icon("check", 16, nil, {Name = "Check", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), ImageColor3 = Color3.new(1, 1, 1), ImageTransparency = 1, ZIndex = 3, Parent = box})
+        local checkScale = check and New("UIScale", {Scale = 0.5, Parent = check})
+        render = function(animate)
+            local time = animate and 0.3 or 0
+            Tween(boxFill, time, {BackgroundTransparency = Element.Value and 0 or 1})
+            Tween(boxStroke, time, {Transparency = Element.Value and 1 or 0})
+            if check then
+                Tween(check, time, {ImageTransparency = Element.Value and 0 or 1})
+                Tween(checkScale, time + 0.1, {Scale = Element.Value and 1 or 0.5}, Enum.EasingStyle.Back)
+            end
+        end
+    end
+    local track = not checkbox and New("Frame", {Name = "Switch", AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, 0, 0.5, 0), Size = UDim2.fromOffset(46, 24), Theme = {BackgroundColor3 = "Field"}, Parent = Element.Right}, {Corner(Round)})
+    if track then
     local trackStroke = Stroke("Stroke")
     trackStroke.Parent = track
     local fill = New("Frame", {Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.new(1, 1, 1), BackgroundTransparency = 1, Parent = track}, {Corner(Round)})
     AccentGradient(fill, 0)
     local knob = New("Frame", {Name = "Knob", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(0, 12, 0.5, 0), Size = UDim2.fromOffset(16, 16), BackgroundColor3 = Color3.new(1, 1, 1), ZIndex = 3, Parent = track}, {Corner(Round)})
-    local function render(animate)
+    render = function(animate)
         local time = animate and 0.35 or 0
         local theme = CurrentTheme()
         Tween(fill, time * 0.8, {BackgroundTransparency = Element.Value and 0 or 1})
@@ -746,6 +797,7 @@ function Elements:Toggle(config)
             Tween(knob, 0.12, {Size = UDim2.fromOffset(22, 16)})
             task.delay(0.12, function() Tween(knob, 0.25, {Size = UDim2.fromOffset(16, 16)}, Enum.EasingStyle.Back) end)
         end
+    end
     end
     function Element:Set(value, silent)
         Element.Value = value and true or false
@@ -1307,14 +1359,26 @@ end
 
 function Elements:Paragraph(config)
     config = config or {}
+    if config.Image and not config.Icon then config.Icon = config.Image end
     local Element = BaseElement(self, config, {})
     Element.Type = "Paragraph"
+    local thumbnail
+    if config.Thumbnail and config.Thumbnail ~= "" then
+        local thumbHolder = New("Frame", {Name = "Thumbnail", Size = UDim2.new(1, 0, 0, (config.ThumbnailSize or 80) + 12), BackgroundTransparency = 1, LayoutOrder = 2, Parent = Element.Frame}, {Padding(14, 14, 0, 12)})
+        thumbnail = New("ImageLabel", {Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Crop, Image = DX:GetIcon(config.Thumbnail) or config.Thumbnail, Parent = thumbHolder}, {Corner(8)})
+    end
+    function Element:SetImage(value)
+        if Element.IconImage then Element.IconImage.Image = DX:GetIcon(value) or value end
+    end
+    function Element:SetThumbnail(value)
+        if thumbnail then thumbnail.Image = DX:GetIcon(value) or value end
+    end
     if config.Color then
         local bar = New("Frame", {Name = "Bar", Size = UDim2.new(0, 3, 1, -20), Position = UDim2.fromOffset(0, 10), BorderSizePixel = 0, ZIndex = 2, Parent = Element.Card}, {Corner(Round)})
         if typeof(config.Color) == "Color3" then bar.BackgroundColor3 = config.Color else Bind(bar, "BackgroundColor3", CurrentTheme()[config.Color] and config.Color or "Accent") end
     end
     if config.Buttons and #config.Buttons > 0 then
-        local row = New("Frame", {Name = "Buttons", Size = UDim2.new(1, 0, 0, 46), BackgroundTransparency = 1, LayoutOrder = 2, Parent = Element.Frame}, {Padding(14, 14, 0, 12), List(8, Horizontal)})
+        local row = New("Frame", {Name = "Buttons", Size = UDim2.new(1, 0, 0, 46), BackgroundTransparency = 1, LayoutOrder = 3, Parent = Element.Frame}, {Padding(14, 14, 0, 12), List(8, Horizontal)})
         for index, buttonConfig in ipairs(config.Buttons) do
             local button = ActionButton(row, buttonConfig)
             button.LayoutOrder = index
@@ -1368,12 +1432,18 @@ function Elements:Code(config)
     Text({Text = config.Title or "Code", TextSize = 13, FontFace = GetFont(Weight.SemiBold), Theme = {TextColor3 = "SubText"}, Size = UDim2.new(1, -30, 1, 0), Parent = head})
     local copy = New("ImageButton", {AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, 0, 0.5, 0), Size = UDim2.fromOffset(16, 16), BackgroundTransparency = 1, Image = DX:GetIcon("copy") or "", Theme = {ImageColor3 = "SubText"}, Parent = head})
     local code = New("TextLabel", {Text = config.Code or "", TextSize = 13, FontFace = Font.new("rbxasset://fonts/families/RobotoMono.json"), Theme = {TextColor3 = "Text"}, BackgroundTransparency = 1, TextXAlignment = Enum.TextXAlignment.Left, TextYAlignment = Enum.TextYAlignment.Top, Size = UDim2.new(1, 0, 0, 0), AutomaticSize = AutoY, TextWrapped = true, LayoutOrder = 2, Parent = frame})
+    local Element = {Title = config.Title or "Code", CopyCallbacks = {config.OnCopy}}
     copy.MouseButton1Click:Connect(function()
         pcall(function() (setclipboard or toclipboard)(code.Text) end)
         copy.Image = DX:GetIcon("check") or copy.Image
         task.delay(1.2, function() copy.Image = DX:GetIcon("copy") or copy.Image end)
+        for _, callback in pairs(Element.CopyCallbacks) do SafeCall(callback) end
     end)
-    return {Set = function(_, value) code.Text = value end, Destroy = function() frame:Destroy() end}
+    function Element:SetCode(value) code.Text = tostring(value or "") end
+    Element.Set = Element.SetCode
+    function Element:OnCopy(callback) table.insert(Element.CopyCallbacks, callback) end
+    function Element:Destroy() frame:Destroy() end
+    return Element
 end
 
 local function Serialize(element)
@@ -1429,6 +1499,14 @@ local function CreateConfigManager(Window)
             end
             return true
         end
+        function Config:Register(flag, element)
+            if type(element) == "table" then
+                element.Flag = flag
+                element.Window = element.Window or Window
+                DX.Flags[flag] = element
+            end
+            return Config
+        end
         function Config:Delete()
             if isfile and delfile and isfile(Manager:Path(name)) then delfile(Manager:Path(name)) end
         end
@@ -1474,7 +1552,9 @@ function DX:CreateWindow(config)
     Window.ConfigManager = CreateConfigManager(Window)
     table.insert(DX.Windows, Window)
 
-    if config.Glass ~= nil then DX.Glass = config.Glass == true end
+    local glass = config.Glass
+    if glass == nil then glass = config.Transparent end
+    if glass ~= nil then DX.Glass = glass == true end
     local minSize = config.MinSize or Vector2.new(520, 340)
     local maxSize = config.MaxSize or Vector2.new(960, 680)
     local size = config.Size or UDim2.fromOffset(660, 460)
@@ -1563,7 +1643,7 @@ function DX:CreateWindow(config)
         listTop = 56
     end
 
-    local showUser = config.User ~= false
+    local showUser = config.User ~= false and not (type(config.User) == "table" and config.User.Enabled == false)
     local userHeight = showUser and 62 or 0
     local tabList = New("ScrollingFrame", {Name = "Tabs", 
         Position = UDim2.fromOffset(0, listTop),
@@ -1595,7 +1675,7 @@ function DX:CreateWindow(config)
 
     local function setTabVisual(tab, active, animate)
         local time = animate and 0.25 or 0
-        Tween(tab.Button, time, {BackgroundTransparency = active and 0 or 1})
+        Tween(tab.TabButton, time, {BackgroundTransparency = active and 0 or 1})
         Tween(tab.Indicator, animate and 0.35 or 0, {Size = UDim2.fromOffset(3, active and 18 or 0)}, Enum.EasingStyle.Back)
         Retheme(tab.TitleLabel, "TextColor3", active and "Text" or "SubText", time)
         if tab.IconImage then Retheme(tab.IconImage, "ImageColor3", active and "Accent" or "SubText", time) end
@@ -1620,12 +1700,20 @@ function DX:CreateWindow(config)
         tabConfig = tabConfig or {}
         local Tab = setmetatable({Title = tabConfig.Title or tabConfig.Name or "Tab", Window = Window, Group = group, Keywords = {}}, {__index = Elements})
         Tab.Tab = Tab
+        Tab.Locked = tabConfig.Locked == true
         local button = New("TextButton", {Name = Tab.Title, Text = "", AutoButtonColor = false, Size = UDim2.new(1, 0, 0, 36), Theme = {BackgroundColor3 = "Element"}, BackgroundTransparency = 1, LayoutOrder = NextOrder(), Parent = container}, {Corner(9)})
         local indicator = New("Frame", {AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 0, 0.5, 0), Size = UDim2.fromOffset(3, 0), BackgroundColor3 = Color3.new(1, 1, 1), BorderSizePixel = 0, Parent = button}, {Corner(Round)})
         AccentGradient(indicator, 90)
         local icon = Icon(tabConfig.Icon or tabConfig.Image, 16, "SubText", {AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 13, 0.5, 0), Parent = button})
         local labelX = icon and 38 or 15
         local label = Text({Text = Tab.Title, TextSize = 14, FontFace = GetFont(Weight.Medium), Theme = {TextColor3 = "SubText"}, Position = UDim2.fromOffset(labelX, 0), Size = UDim2.new(1, -(labelX + 8), 1, 0), TextTruncate = Enum.TextTruncate.AtEnd, Parent = button})
+        local lockIcon = Icon("lock", 14, "SubText", {Name = "Lock", AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -10, 0.5, 0), Visible = Tab.Locked, Parent = button})
+        local function applyLock()
+            if lockIcon then lockIcon.Visible = Tab.Locked end
+            label.TextTransparency = Tab.Locked and 0.5 or 0
+            if icon then icon.ImageTransparency = Tab.Locked and 0.5 or 0 end
+        end
+        applyLock()
         local page = New("Frame", {Name = "[Tab] " .. Tab.Title, Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Visible = false, Parent = content})
         local scroll = New("ScrollingFrame", {Name = "Container", 
             Size = UDim2.fromScale(1, 1),
@@ -1645,7 +1733,7 @@ function DX:CreateWindow(config)
                 Text({Text = tabConfig.Desc, TextSize = 13, Theme = {TextColor3 = "SubText"}, Size = UDim2.new(1, 0, 0, 0), AutomaticSize = AutoY, TextWrapped = true, LayoutOrder = 2, Parent = head})
             end
         end
-        Tab.Button, Tab.Indicator, Tab.IconImage, Tab.TitleLabel, Tab.Page, Tab.Container = button, indicator, icon, label, page, scroll
+        Tab.TabButton, Tab.Indicator, Tab.IconImage, Tab.TitleLabel, Tab.Page, Tab.Container = button, indicator, icon, label, page, scroll
         button.MouseEnter:Connect(function()
             if Window.Selected ~= Tab then Tween(button, 0.2, {BackgroundTransparency = 0.5}) end
         end)
@@ -1653,10 +1741,13 @@ function DX:CreateWindow(config)
             if Window.Selected ~= Tab then Tween(button, 0.2, {BackgroundTransparency = 1}) end
         end)
         button.MouseButton1Click:Connect(function()
+            if Tab.Locked then return end
             Ripple(button, 9)
             Window:SelectTab(Tab)
         end)
-        function Tab:Select() Window:SelectTab(Tab) end
+        function Tab:Select() if not Tab.Locked then Window:SelectTab(Tab) end end
+        function Tab:Lock() Tab.Locked = true applyLock() end
+        function Tab:Unlock() Tab.Locked = false applyLock() end
         function Tab:SetTitle(value) Tab.Title = value label.Text = value end
         function Tab:Destroy()
             button:Destroy()
@@ -1666,12 +1757,23 @@ function DX:CreateWindow(config)
         end
         table.insert(Window.Tabs, Tab)
         if group then table.insert(group.Tabs, Tab) end
-        if not Window.Selected then Window:SelectTab(Tab) end
+        if not Window.Selected and not Tab.Locked then Window:SelectTab(Tab) end
         return Tab
     end
 
     function Window:Tab(tabConfig)
         return createTab(tabConfig, tabList, nil)
+    end
+
+    function Window:Divider()
+        local line = New("Frame", {Name = "[Divider]", Size = UDim2.new(1, -12, 0, 1), Theme = {BackgroundColor3 = "Stroke"}, BorderSizePixel = 0, LayoutOrder = NextOrder(), Parent = tabList})
+        return {Destroy = function() line:Destroy() end}
+    end
+
+    function Window:Space(height)
+        if type(height) == "table" then height = height.Size or height.Height end
+        local space = New("Frame", {Name = "[Space]", Size = UDim2.new(1, 0, 0, height or 8), BackgroundTransparency = 1, LayoutOrder = NextOrder(), Parent = tabList})
+        return {Destroy = function() space:Destroy() end}
     end
 
     function Window:Section(sectionConfig)
@@ -1729,7 +1831,7 @@ function DX:CreateWindow(config)
                         if tostring(keyword):lower():find(query, 1, true) then match = true break end
                     end
                 end
-                tab.Button.Visible = match
+                tab.TabButton.Visible = match
             end
             for _, group in ipairs(Window.Groups) do
                 group.Forced = query ~= ""
@@ -1777,8 +1879,8 @@ function DX:CreateWindow(config)
     local openStrokeGradient = AccentGradient(openStroke, 0)
     TweenService:Create(openStrokeGradient, TweenInfo.new(4, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1), {Rotation = 360}):Play()
     local openIconHolder = New("Frame", {Name = "Icon", Size = UDim2.fromOffset(26, 26), BackgroundTransparency = 1, LayoutOrder = 1, Parent = openButton})
-    Icon(config.Icon or "layout-dashboard", 24, "Accent", {AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Parent = openIconHolder})
-    Text({Text = Window.Title, TextSize = 14, FontFace = GetFont(Weight.SemiBold), Size = UDim2.fromOffset(0, 42), AutomaticSize = AutoX, LayoutOrder = 2, Parent = openButton})
+    local openIcon = Icon(config.Icon or "layout-dashboard", 24, "Accent", {AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Parent = openIconHolder})
+    local openTitle = Text({Text = Window.Title, TextSize = 14, FontFace = GetFont(Weight.SemiBold), Size = UDim2.fromOffset(0, 42), AutomaticSize = AutoX, LayoutOrder = 2, Parent = openButton})
 
     local function fire(list)
         for _, callback in ipairs(list) do SafeCall(callback) end
@@ -1801,7 +1903,7 @@ function DX:CreateWindow(config)
         Tween(scale, 0.25, {Scale = Window.Scale * 0.92}, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
         FadeThrough(canvas, main, holder, 0.25, 1)
         task.delay(0.25, function() if not Window.Opened then holder.Visible = false end end)
-        if not Window.Destroyed then
+        if not Window.Destroyed and Window.OpenButtonEnabled ~= false then
             openButton.Visible = true
             Tween(openButton, 0.5, {Position = UDim2.new(openButton.Position.X.Scale, openButton.Position.X.Offset, 0, 14)}, Enum.EasingStyle.Back)
         end
@@ -1832,6 +1934,7 @@ function DX:CreateWindow(config)
         Window:Close()
         openButton.Visible = false
         for _, connection in ipairs(Window.Connections) do pcall(function() connection:Disconnect() end) end
+        if Window.CursorCleanup then Window.CursorCleanup() end
         for flag, element in pairs(DX.Flags) do
             if element.Window == Window then DX.Flags[flag] = nil end
         end
@@ -1916,6 +2019,52 @@ function DX:CreateWindow(config)
         if Window.Opened then Tween(scale, 0.3, {Scale = Window.Scale}) end
     end
     function Window:SetGlass(state) DX:SetGlass(state) end
+
+    function Window:EditOpenButton(options)
+        options = options or {}
+        if options.Title then openTitle.Text = options.Title end
+        if options.Icon and openIcon then openIcon.Image = DX:GetIcon(options.Icon) or openIcon.Image end
+        if options.Enabled ~= nil then
+            Window.OpenButtonEnabled = options.Enabled ~= false
+            if not Window.OpenButtonEnabled then openButton.Visible = false end
+        end
+    end
+
+    if config.Cursor ~= false and not DX.IsMobile then
+        local cursorGui = ScreenGui("DX-UI-Cursor", 2000)
+        local shadow = Icon("mouse-pointer-2", 22, nil, {Name = "Shadow", ImageColor3 = Color3.new(0, 0, 0), ImageTransparency = 0.4, Visible = false, ZIndex = 1, Parent = cursorGui})
+        local pointer = Icon("mouse-pointer-2", 22, nil, {Name = "Pointer", ImageColor3 = Color3.new(1, 1, 1), Visible = false, ZIndex = 2, Parent = cursorGui})
+        local savedIcon
+        local function inside(object, point)
+            if not object.Visible then return false end
+            local position, extent = object.AbsolutePosition, object.AbsoluteSize
+            return point.X >= position.X and point.Y >= position.Y and point.X <= position.X + extent.X and point.Y <= position.Y + extent.Y
+        end
+        local bindName = "DXCursor" .. HttpService:GenerateGUID(false)
+        RunService:BindToRenderStep(bindName, Enum.RenderPriority.Last.Value + 2, function()
+            local mouse = UserInputService:GetMouseLocation()
+            local point = mouse - GuiService:GetGuiInset()
+            local hovering = UserInputService.MouseEnabled and (inside(holder, point) or inside(openButton, point) or gui:FindFirstChild("Dialog") ~= nil)
+            Window.Hovering = hovering
+            if hovering then
+                if savedIcon == nil then savedIcon = UserInputService.MouseIconEnabled end
+                UserInputService.MouseIconEnabled = false
+                if pointer then pointer.Position = UDim2.fromOffset(mouse.X - 4, mouse.Y - 4) end
+                if shadow then shadow.Position = UDim2.fromOffset(mouse.X - 2.5, mouse.Y - 2.5) end
+            elseif savedIcon ~= nil then
+                UserInputService.MouseIconEnabled = savedIcon
+                savedIcon = nil
+            end
+            if pointer then pointer.Visible = hovering end
+            if shadow then shadow.Visible = hovering end
+        end)
+        Window.CursorCleanup = function()
+            pcall(function() RunService:UnbindFromRenderStep(bindName) end)
+            if savedIcon ~= nil then UserInputService.MouseIconEnabled = savedIcon end
+            Window.Hovering = false
+            cursorGui:Destroy()
+        end
+    end
 
     local camera = workspace.CurrentCamera
     if camera then

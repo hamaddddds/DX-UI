@@ -1,0 +1,1354 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DX-UI Docs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: fixed left index + reading column; every component = heading, live DX stage, snippet, option table */
+:root {
+  --page: #060A14;
+  --panel: #0B1121;
+  --line: #18213F;
+  --ink: #E6ECFA;
+  --muted: #8592B5;
+  --brand: #3B82F6;
+  --brand2: #22D3EE;
+  --code: #080D1A;
+  --f-display: "Montserrat", "Gotham", "Segoe UI", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --dx-bg: #0A0F1E; --dx-el: #111A31; --dx-elh: #17223F; --dx-field: #0A1022; --dx-stroke: #1F2D52;
+  --dx-accent: #3B82F6; --dx-accent2: #22D3EE; --dx-text: #EAF0FF; --dx-sub: #8193BD; --dx-icon: #A7B6DD;
+  --dx-ok: #30FF6A; --dx-warn: #FBBF24; --dx-err: #F43F5E;
+  color-scheme: dark;
+}
+:root[data-dx="Midnight"] { --dx-bg: #0E0A1E; --dx-el: #18122F; --dx-elh: #20183D; --dx-field: #0D0920; --dx-stroke: #2C2350; --dx-accent: #8B5CF6; --dx-accent2: #EC4899; --dx-sub: #9A8CC4; --dx-icon: #B6A9DE; }
+:root[data-dx="Emerald"] { --dx-bg: #08130F; --dx-el: #0F231B; --dx-elh: #142D23; --dx-field: #081510; --dx-stroke: #1C3D30; --dx-accent: #10B981; --dx-accent2: #A3E635; --dx-sub: #86B5A2; --dx-icon: #A5D4C0; }
+:root[data-dx="Crimson"] { --dx-bg: #140A0D; --dx-el: #221117; --dx-elh: #2B161D; --dx-field: #12080B; --dx-stroke: #40202A; --dx-accent: #F43F5E; --dx-accent2: #FB923C; --dx-sub: #C08F9A; --dx-icon: #DDB0BA; }
+
+* { box-sizing: border-box; }
+body { background: var(--page); color: var(--ink); font: 15px/1.6 var(--f-body); }
+a { color: var(--brand2); text-decoration: none; }
+a:hover { text-decoration: underline; }
+:focus-visible { outline: 2px solid var(--brand2); outline-offset: 2px; border-radius: 6px; }
+.icon svg, i[data-lucide], svg.lucide { width: 1em; height: 1em; stroke-width: 2; flex: none; }
+
+.topnav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50; display: flex; align-items: center; gap: 16px; padding: 12px 24px; background: color-mix(in srgb, var(--page) 88%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+.brand { display: flex; align-items: center; gap: 10px; font: 800 17px var(--f-display); letter-spacing: .2px; color: var(--ink); }
+.brand small { font: 600 11px var(--f-mono); color: var(--muted); border: 1px solid var(--line); border-radius: 99px; padding: 2px 8px; }
+.themes { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
+.themes button { font: 600 12px var(--f-display); color: var(--muted); background: transparent; border: 1px solid var(--line); border-radius: 99px; padding: 5px 12px; cursor: pointer; display: flex; gap: 6px; align-items: center; }
+.themes button i { width: 8px; height: 8px; border-radius: 50%; display: block; }
+.themes button[aria-pressed="true"] { color: var(--ink); border-color: var(--dx-accent); background: color-mix(in srgb, var(--dx-accent) 14%, transparent); }
+
+.shell { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 40px; max-width: 1180px; margin: 0 auto; padding-inline: 24px; }
+.side { position: sticky; top: 64px; align-self: start; max-height: calc(100vh - 64px); overflow-y: auto; padding-block: 28px; }
+.side h4 { font: 700 11px var(--f-display); letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); margin: 18px 0 6px; }
+.side h4:first-child { margin-top: 0; }
+.side a { display: flex; gap: 9px; align-items: center; color: var(--muted); font-size: 14px; padding: 5px 10px; border-radius: 8px; border-left: 2px solid transparent; }
+.side a:hover { color: var(--ink); background: var(--panel); text-decoration: none; }
+.side a.active { color: var(--ink); background: var(--panel); border-left-color: var(--dx-accent); }
+.side a svg { color: var(--dx-icon); }
+
+main { padding-block: 32px 120px; min-width: 0; }
+.hero h1 { font: 800 clamp(30px, 4.4vw, 44px)/1.1 var(--f-display); margin: 0 0 12px; text-wrap: balance; letter-spacing: -.5px; }
+.hero h1 span { background: linear-gradient(90deg, var(--dx-accent), var(--dx-accent2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hero p { color: var(--muted); max-width: 62ch; margin: 0 0 22px; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 26px; padding: 0; list-style: none; }
+.facts li { font: 500 12.5px var(--f-mono); color: var(--muted); border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; }
+.facts b { color: var(--ink); font-weight: 500; }
+
+section.doc { padding-top: 56px; scroll-margin-top: 64px; }
+section.doc h2 { font: 700 24px var(--f-display); margin: 0 0 6px; display: flex; align-items: center; gap: 10px; text-wrap: balance; }
+section.doc h2 svg { color: var(--dx-accent); width: 22px; height: 22px; }
+section.doc > p { color: var(--muted); margin: 0 0 18px; max-width: 68ch; }
+section.doc h3 { font: 600 14px var(--f-display); margin: 22px 0 8px; color: var(--ink); }
+code.inline { font: 13px var(--f-mono); background: var(--panel); border: 1px solid var(--line); padding: 1px 6px; border-radius: 6px; color: var(--ink); }
+.group-title { font: 800 12px var(--f-display); letter-spacing: 1.4px; text-transform: uppercase; color: var(--dx-accent); margin: 72px 0 -30px; }
+
+.stage { position: relative; isolation: isolate; border: 1px solid var(--line); border-bottom: 0; border-radius: 14px 14px 0 0; padding: 34px 20px; background: radial-gradient(circle at 1px 1px, #ffffff0d 1px, transparent 0) 0 0 / 18px 18px, var(--panel); overflow: hidden; display: flex; justify-content: center; perspective: 1100px; }
+.stage::before { content: ""; position: absolute; inset: 0; z-index: -1; background: radial-gradient(30% 60% at 15% 80%, color-mix(in srgb, var(--dx-accent) 22%, transparent), transparent 70%), radial-gradient(30% 60% at 88% 20%, color-mix(in srgb, var(--dx-accent2) 18%, transparent), transparent 70%); }
+.stage .dx-pane { transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform .45s cubic-bezier(.22,1,.36,1); }
+.stage .dx-pane { width: 100%; max-width: 560px; }
+.stage-label { position: absolute; top: 10px; left: 14px; font: 600 10.5px var(--f-mono); letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+.codebox { position: relative; border: 1px solid var(--line); border-radius: 0 0 14px 14px; background: var(--code); }
+.codebox.solo { border-radius: 14px; }
+.codebox pre { margin: 0; padding: 16px 92px 16px 18px; overflow-x: auto; font: 13px/1.65 var(--f-mono); color: #C9D4F2; tab-size: 4; }
+.copy { position: absolute; top: 10px; right: 10px; display: flex; gap: 6px; align-items: center; font: 600 11.5px var(--f-display); color: var(--muted); background: var(--panel); border: 1px solid var(--line); border-radius: 7px; padding: 5px 9px; cursor: pointer; }
+.copy:hover { color: var(--ink); }
+.tk-c { color: #5B6A92; font-style: italic; } .tk-s { color: #7EE0B5; } .tk-n { color: #F9B97A; } .tk-k { color: #C792EA; } .tk-t { color: #5FD3F3; } .tk-m { color: #82AAFF; }
+
+.table-wrap { overflow-x: auto; margin-top: 14px; border: 1px solid var(--line); border-radius: 12px; }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+th, td { text-align: left; padding: 9px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+th { font: 600 11px var(--f-display); letter-spacing: 1px; text-transform: uppercase; color: var(--muted); background: var(--panel); }
+td:first-child { font: 500 13px var(--f-mono); color: var(--ink); white-space: nowrap; }
+td:nth-child(2) { font: 12.5px var(--f-mono); color: var(--brand2); white-space: nowrap; }
+td { color: var(--muted); }
+.methods { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.methods code { font: 12.5px var(--f-mono); color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 7px; padding: 3px 9px; }
+
+/* ---------- DX-UI replica ---------- */
+.dx { font-family: var(--f-display); color: var(--dx-text); }
+.dx-pane { display: flex; flex-direction: column; gap: 8px; }
+.dx-card { position: relative; overflow: hidden; background: var(--dx-el); border: 1px solid color-mix(in srgb, var(--dx-stroke) 65%, transparent); border-radius: 10px; transition: background .2s, border-color .3s; }
+.dx-card:hover { background: var(--dx-elh); }
+.dx-head { display: flex; align-items: center; gap: 12px; padding: 12px 14px; min-height: 48px; cursor: default; user-select: none; }
+.dx-card.click > .dx-head { cursor: pointer; }
+.dx-head > svg { color: var(--dx-icon); width: 18px; height: 18px; }
+.dx-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.dx-t { font-size: 14px; font-weight: 500; line-height: 1.25; }
+.dx-d { font-size: 12px; color: var(--dx-sub); line-height: 1.3; }
+.dx-ripple { position: absolute; border-radius: 50%; background: #fff; opacity: .12; transform: scale(0); pointer-events: none; animation: rip .55s ease-out forwards; }
+@keyframes rip { to { transform: scale(1); opacity: 0; } }
+
+.dx-switch { width: 46px; height: 24px; border-radius: 99px; background: var(--dx-field); border: 1px solid var(--dx-stroke); position: relative; flex: none; transition: border-color .25s; }
+.dx-switch::before { content: ""; position: absolute; inset: -1px; border-radius: inherit; background: linear-gradient(90deg, var(--dx-accent), var(--dx-accent2)); opacity: 0; transition: opacity .28s; }
+.dx-switch i { position: absolute; top: 3px; left: 4px; width: 16px; height: 16px; border-radius: 99px; background: var(--dx-sub); transition: left .35s cubic-bezier(.34,1.56,.64,1), background .3s, width .12s; }
+.on .dx-switch { border-color: transparent; }
+.on .dx-switch::before { opacity: 1; }
+.on .dx-switch i { left: 25px; background: #fff; }
+.dx-switch.squash i { width: 22px; }
+
+.dx-box { flex: none; height: 30px; display: flex; align-items: center; gap: 8px; padding: 0 10px; background: var(--dx-field); border: 1px solid var(--dx-stroke); border-radius: 8px; font-size: 13px; transition: border-color .2s; }
+.dx-box svg { color: var(--dx-sub); width: 14px; height: 14px; }
+.dx-box input { all: unset; width: 100%; font: 13px var(--f-display); color: var(--dx-text); }
+.dx-box input::placeholder { color: var(--dx-sub); }
+.dx-box:focus-within, .dx-box.active { border-color: var(--dx-accent); }
+.dx-num { width: 72px; justify-content: center; font-weight: 500; }
+
+.dx-slider { padding: 2px 14px 14px; }
+.dx-track { position: relative; height: 6px; border-radius: 99px; background: var(--dx-field); cursor: pointer; touch-action: none; }
+.dx-track::after { content: ""; position: absolute; inset: -8px 0; }
+.dx-fill { position: absolute; inset: 0 auto 0 0; border-radius: inherit; background: linear-gradient(90deg, var(--dx-accent), var(--dx-accent2)); }
+.dx-knob { position: absolute; top: 50%; width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 2px solid var(--dx-accent); transform: translate(-50%, -50%); transition: width .2s cubic-bezier(.34,1.56,.64,1), height .2s cubic-bezier(.34,1.56,.64,1); z-index: 1; }
+.dragging .dx-knob { width: 20px; height: 20px; }
+
+.dx-select { width: 170px; justify-content: space-between; cursor: pointer; }
+.dx-select span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dx-select svg { transition: transform .3s; }
+.open .dx-select { border-color: var(--dx-accent); }
+.open .dx-select svg { transform: rotate(180deg); }
+.dx-expand { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .35s cubic-bezier(.22,1,.36,1); }
+.dx-expand > div { overflow: hidden; }
+.open > .dx-expand { grid-template-rows: 1fr; }
+.dx-options { padding: 0 14px 12px; display: flex; flex-direction: column; gap: 5px; }
+.dx-opt + .dx-opt { position: relative; }
+.dx-opt + .dx-opt::before { content: ""; position: absolute; left: 8px; right: 8px; top: -3px; height: 1px; background: color-mix(in srgb, var(--dx-stroke) 80%, transparent); }
+.dx-opt { display: flex; align-items: center; justify-content: space-between; height: 30px; padding: 0 10px; border-radius: 7px; font-size: 13px; color: var(--dx-sub); cursor: pointer; transition: background .2s, color .2s; }
+.dx-opt:hover { background: color-mix(in srgb, var(--dx-elh) 50%, transparent); }
+.dx-opt svg { color: var(--dx-accent); width: 15px; height: 15px; opacity: 0; transform: scale(.5); transition: opacity .25s, transform .25s cubic-bezier(.34,1.56,.64,1); }
+.dx-opt.sel { background: var(--dx-elh); color: var(--dx-text); }
+.dx-opt.sel svg { opacity: 1; transform: scale(1); }
+.open .dx-opt { animation: optin .3s both; }
+@keyframes optin { from { opacity: 0; transform: translateX(10px); } }
+
+.dx-key { height: 28px; padding: 0 12px; display: flex; align-items: center; border-radius: 7px; background: var(--dx-field); border: 1px solid var(--dx-stroke); font-size: 13px; font-weight: 600; cursor: pointer; transition: background .2s; }
+.dx-key.listening { border-color: var(--dx-accent); animation: pulse 1s ease-in-out infinite; }
+@keyframes pulse { 50% { border-color: color-mix(in srgb, var(--dx-accent) 30%, transparent); } }
+
+.dx-swatch { width: 46px; height: 24px; border-radius: 7px; border: 1px solid var(--dx-stroke); flex: none; }
+.dx-cp-body { padding: 0 14px 14px; display: flex; flex-direction: column; gap: 10px; }
+.dx-cp-area { display: flex; gap: 12px; height: 132px; }
+.dx-sv { position: relative; flex: 1; border-radius: 8px; cursor: crosshair; touch-action: none; background-image: linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, transparent); }
+.dx-hue { position: relative; width: 16px; border-radius: 8px; cursor: ns-resize; touch-action: none; background: linear-gradient(#f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00); }
+.dx-sv i { position: absolute; width: 14px; height: 14px; border-radius: 50%; border: 2px solid #fff; transform: translate(-50%, -50%); box-shadow: 0 0 0 1px #0004; }
+.dx-hue i { position: absolute; left: -3px; right: -3px; height: 6px; border-radius: 99px; background: #fff; transform: translateY(-50%); box-shadow: 0 0 0 1px #0006; }
+.dx-cp-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--dx-sub); }
+.dx-cp-row .dx-prev { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--dx-stroke); }
+.dx-cp-row .dx-box { width: 110px; font-weight: 500; }
+
+.dx-para { padding-left: 4px; }
+.dx-para::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px; border-radius: 99px; background: var(--dx-accent); }
+.dx-btnrow { display: flex; gap: 8px; padding: 0 14px 12px; flex-wrap: wrap; }
+.dx-btn { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 16px; border-radius: 8px; font: 600 14px var(--f-display); color: var(--dx-text); background: var(--dx-el); border: 1px solid var(--dx-stroke); cursor: pointer; transition: transform .25s cubic-bezier(.34,1.56,.64,1); }
+.dx-btn:hover { transform: scale(1.04); }
+.dx-btn:active { transform: scale(.94); }
+.dx-btn.primary { border: 0; color: #fff; background: linear-gradient(90deg, var(--dx-accent), var(--dx-accent2)); }
+.dx-btn.tertiary { background: transparent; border-color: transparent; color: var(--dx-accent); }
+.dx-btn svg { width: 15px; height: 15px; }
+.dx-arrow { color: var(--dx-sub); transition: transform .35s cubic-bezier(.34,1.56,.64,1), color .3s; }
+.dx-card.pressed .dx-arrow { color: var(--dx-accent); transform: translateX(3px); transition-duration: .12s; }
+
+.dx-sec { display: flex; flex-direction: column; gap: 8px; }
+.dx-sec-head { display: flex; align-items: center; gap: 8px; height: 26px; cursor: pointer; font-size: 15px; font-weight: 600; user-select: none; }
+.dx-sec-head > svg:first-child { color: var(--dx-accent); width: 16px; height: 16px; }
+.dx-sec-head hr { flex: 1; border: 0; height: 1px; background: var(--dx-stroke); margin: 0 6px; }
+.dx-sec-head > svg:last-child { color: var(--dx-sub); width: 16px; height: 16px; transition: transform .3s; }
+.dx-sec.closed .dx-sec-head > svg:last-child { transform: rotate(-90deg); }
+.dx-sec-body { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .35s cubic-bezier(.22,1,.36,1); }
+.dx-sec-body > div { overflow: hidden; display: flex; flex-direction: column; gap: 8px; padding: 1px; }
+.dx-sec.closed .dx-sec-body { grid-template-rows: 0fr; }
+
+.dx-label { font-size: 13px; padding: 2px 4px; }
+.dx-sub { font-size: 12px; color: var(--dx-sub); padding: 0 4px; }
+.dx-divider { height: 1px; background: var(--dx-stroke); }
+.dx-code { background: var(--dx-field); border: 1px solid var(--dx-stroke); border-radius: 10px; padding: 10px 14px 12px; display: flex; flex-direction: column; gap: 8px; }
+.dx-code div { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; color: var(--dx-sub); }
+.dx-code pre { margin: 0; font: 12.5px var(--f-mono); white-space: pre-wrap; word-break: break-all; color: var(--dx-text); }
+
+.dx-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.dx-tag { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 9px; border-radius: 11px; font-size: 12px; font-weight: 600; color: var(--c); background: color-mix(in srgb, var(--c) 18%, transparent); border: 1px solid color-mix(in srgb, var(--c) 45%, transparent); animation: tagin .45s cubic-bezier(.34,1.56,.64,1) both; }
+.dx-tag svg { width: 12px; height: 12px; }
+@keyframes tagin { from { transform: scale(.6); } }
+
+.dx-toasts { position: absolute; right: 16px; bottom: 16px; width: min(320px, calc(100% - 32px)); display: flex; flex-direction: column; gap: 10px; z-index: 5; pointer-events: none; }
+.dx-toast { pointer-events: auto; background: var(--dx-bg); border: 1px solid var(--dx-stroke); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; animation: toastin .55s cubic-bezier(.34,1.56,.64,1) both; }
+.dx-toast.out { animation: toastout .35s cubic-bezier(.64,0,.78,0) forwards; }
+@keyframes toastin { from { transform: translateX(360px); } }
+@keyframes toastout { to { transform: translateX(360px); } }
+.dx-toast-head { display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 600; }
+.dx-toast-head b { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; color: var(--k); background: color-mix(in srgb, var(--k) 15%, transparent); flex: none; }
+.dx-toast-head b svg { width: 17px; height: 17px; }
+.dx-toast-head span { flex: 1; }
+.dx-toast-head button { all: unset; color: var(--dx-sub); cursor: pointer; display: grid; }
+.dx-toast p { margin: 0; font-size: 13px; color: var(--dx-sub); }
+.dx-toast u { display: block; height: 3px; border-radius: 99px; background: var(--dx-field); overflow: hidden; text-decoration: none; }
+.dx-toast u::after { content: ""; display: block; height: 100%; background: var(--k); animation: drain var(--dur) linear forwards; transform-origin: left; }
+@keyframes drain { to { transform: scaleX(0); } }
+
+.dx-overlay { position: absolute; inset: 0; background: #000000a0; display: grid; place-items: center; z-index: 6; animation: fade .25s both; padding: 16px; }
+.dx-overlay.out { animation: fade .2s reverse forwards; }
+@keyframes fade { from { opacity: 0; } }
+.dx-dialog { width: min(380px, 100%); background: var(--dx-bg); border: 1px solid var(--dx-stroke); border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; animation: pop .45s cubic-bezier(.34,1.56,.64,1) both; }
+@keyframes pop { from { transform: scale(.85); } }
+.dx-dialog-head { display: flex; align-items: center; gap: 12px; font-size: 17px; font-weight: 700; }
+.dx-dialog-head b { width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; color: var(--dx-accent); background: color-mix(in srgb, var(--dx-accent) 18%, transparent); }
+.dx-dialog p { margin: 0; font-size: 14px; line-height: 1.45; color: var(--dx-sub); }
+.dx-dialog-btns { display: flex; justify-content: flex-end; gap: 8px; }
+
+/* full window */
+.scene { position: relative; isolation: isolate; overflow: hidden; border: 1px solid var(--line); border-radius: 18px; padding: 70px 56px 84px; perspective: 1400px; background: var(--panel); }
+.scene::before { content: ""; position: absolute; left: -40%; right: -40%; bottom: -12%; height: 72%; z-index: -1; background-image: linear-gradient(color-mix(in srgb, var(--dx-accent) 38%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--dx-accent) 38%, transparent) 1px, transparent 1px); background-size: 56px 56px; transform: perspective(520px) rotateX(68deg); transform-origin: 50% 100%; -webkit-mask-image: linear-gradient(to top, #000 10%, transparent 85%); mask-image: linear-gradient(to top, #000 10%, transparent 85%); animation: floor 6s linear infinite; }
+@keyframes floor { to { background-position: 0 56px; } }
+.scene::after { content: ""; position: absolute; inset: 0; z-index: -2; background: radial-gradient(38% 48% at 20% 28%, color-mix(in srgb, var(--dx-accent) 50%, transparent), transparent 70%), radial-gradient(34% 44% at 82% 68%, color-mix(in srgb, var(--dx-accent2) 40%, transparent), transparent 70%); filter: blur(24px); }
+.tilt { position: relative; max-width: 760px; margin: 0 auto; transform-style: preserve-3d; transform: rotateX(var(--rx, 7deg)) rotateY(var(--ry, -10deg)); transition: transform .5s cubic-bezier(.22,1,.36,1); }
+.win { position: relative; min-width: 640px; height: 440px; display: grid; grid-template-rows: 54px 1fr; border: 1px solid var(--dx-stroke); border-radius: 14px; transform-style: preserve-3d; animation: winin .5s cubic-bezier(.34,1.56,.64,1) both; box-shadow: 0 50px 90px -40px #000; }
+.win::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--dx-bg); transition: background .35s; }
+.win > * { position: relative; }
+.win-top { transform: translateZ(14px); }
+.win-side { transform: translateZ(8px); }
+.win-body { transform-style: preserve-3d; }
+.win-content { transform: translateZ(20px); }
+.win .dx-toasts { position: absolute; transform: translateZ(60px); }
+.win .dx-overlay { position: absolute; border-radius: 14px; transform: translateZ(80px); }
+.float { position: absolute; z-index: 3; animation: bob 5s ease-in-out infinite; }
+.float-toast { right: -34px; top: -34px; width: 250px; transform: translateZ(110px); }
+.float-toast u::after { animation: drain 6s linear infinite; }
+.float-glass { left: -38px; bottom: -40px; width: 250px; transform: translateZ(90px); animation-delay: -2.5s; }
+@keyframes bob { 50% { translate: 0 -10px; } }
+:root[data-glass] .win::before { background: color-mix(in srgb, var(--dx-bg) 55%, transparent); -webkit-backdrop-filter: blur(18px) saturate(160%); backdrop-filter: blur(18px) saturate(160%); }
+:root[data-glass] .win { border-color: color-mix(in srgb, #fff 16%, var(--dx-stroke)); }
+:root[data-glass] .dx-card { background: color-mix(in srgb, var(--dx-el) 48%, transparent); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+:root[data-glass] .dx-card:hover { background: color-mix(in srgb, var(--dx-elh) 58%, transparent); }
+:root[data-glass] :is(.dx-box, .dx-key, .dx-switch, .dx-track, .win-user, .win-tab.active) { background: color-mix(in srgb, var(--dx-field) 55%, transparent); }
+:root[data-glass] :is(.dx-toast, .dx-dialog) { background: color-mix(in srgb, var(--dx-bg) 58%, transparent); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+@keyframes winin { from { transform: scale(.9); opacity: 0; } }
+.win-top { position: relative; display: flex; align-items: center; gap: 12px; padding: 0 12px 0 16px; border-bottom: 1px solid var(--dx-stroke); overflow: hidden; }
+.win-top::after { content: ""; position: absolute; bottom: -1px; height: 2px; width: 160px; background: linear-gradient(90deg, transparent, var(--dx-accent), var(--dx-accent2), transparent); animation: glow 3.2s ease-in-out infinite alternate; }
+@keyframes glow { from { left: -160px; } to { left: 100%; } }
+.win-title b { display: block; font-size: 16px; font-weight: 700; line-height: 19px; background: linear-gradient(100deg, #fff 45%, #8cc8ff 50%, #fff 55%) -100% 0 / 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: shine 4.3s ease-in-out infinite; }
+@keyframes shine { 0%, 58% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+.win-title span { font-size: 12px; color: var(--dx-sub); }
+.win-ctrl { margin-left: auto; display: flex; gap: 4px; }
+.win-ctrl button { all: unset; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; color: var(--dx-sub); cursor: pointer; transition: background .2s, color .2s; }
+.win-ctrl button:hover { background: var(--dx-elh); color: var(--dx-text); }
+.win-ctrl button:last-child:hover { background: color-mix(in srgb, var(--dx-err) 25%, transparent); color: var(--dx-err); }
+.win-body { display: grid; grid-template-columns: 200px 1fr; min-height: 0; }
+.win-side { border-right: 1px solid var(--dx-stroke); display: flex; flex-direction: column; padding: 12px 10px 10px; gap: 6px; min-height: 0; }
+.win-search { height: 34px; border-radius: 9px; }
+.win-tabs { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; padding-top: 4px; }
+.win-group { display: flex; align-items: center; gap: 8px; height: 30px; padding: 0 4px 0 6px; font-size: 11px; font-weight: 700; letter-spacing: .4px; color: var(--dx-sub); cursor: pointer; user-select: none; }
+.win-group svg { width: 14px; height: 14px; }
+.win-group svg:last-child { margin-left: auto; transition: transform .3s; }
+.win-group.closed svg:last-child { transform: rotate(-90deg); }
+.win-group-body { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .35s cubic-bezier(.22,1,.36,1); }
+.win-group.closed + .win-group-body { grid-template-rows: 0fr; }
+.win-group-body > div { overflow: hidden; display: flex; flex-direction: column; gap: 4px; }
+.win-tab { all: unset; position: relative; display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 13px; border-radius: 9px; font-size: 14px; font-weight: 500; color: var(--dx-sub); cursor: pointer; transition: background .25s, color .25s; overflow: hidden; }
+.win-tab svg { width: 16px; height: 16px; }
+.win-tab:hover { background: color-mix(in srgb, var(--dx-el) 50%, transparent); }
+.win-tab::before { content: ""; position: absolute; left: 0; top: 50%; width: 3px; height: 0; border-radius: 99px; background: linear-gradient(var(--dx-accent), var(--dx-accent2)); transform: translateY(-50%); transition: height .35s cubic-bezier(.34,1.56,.64,1); }
+.win-tab.active { background: var(--dx-el); color: var(--dx-text); }
+.win-tab.active svg { color: var(--dx-accent); }
+.win-tab.active::before { height: 18px; }
+.win-user { display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 8px; border-radius: 10px; background: var(--dx-el); border: 1px solid color-mix(in srgb, var(--dx-stroke) 60%, transparent); }
+.win-user i { width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid var(--dx-accent); background: linear-gradient(135deg, #1b2a52, #0b1226); flex: none; }
+.win-user b { display: block; font-size: 13px; font-weight: 600; line-height: 16px; }
+.win-user span { font-size: 11px; color: var(--dx-sub); }
+.win-content { position: relative; overflow: hidden; }
+.win-page { position: absolute; inset: 0; overflow-y: auto; padding: 16px 18px 18px; display: none; flex-direction: column; gap: 10px; }
+.win-page.show { display: flex; animation: pagein .4s cubic-bezier(.22,1,.36,1) both; }
+@keyframes pagein { from { opacity: 0; transform: translateY(16px); } }
+.win-page h5 { margin: 0; font-size: 22px; font-weight: 700; line-height: 28px; }
+.win-page h5 + p { margin: -6px 0 4px; font-size: 13px; color: var(--dx-sub); }
+.win-resize { position: absolute; right: 4px; bottom: 4px; color: var(--dx-sub); opacity: .6; width: 12px; height: 12px; }
+
+@media (max-width: 860px) {
+  .scene { padding: 24px 12px; overflow-x: auto; perspective: none; }
+  .tilt { transform: none; }
+  .float { display: none; }
+  .shell { grid-template-columns: minmax(0, 1fr); gap: 0; padding-inline: 16px; }
+  .side { position: static; max-height: none; padding-block: 14px 0; display: flex; gap: 6px; overflow-x: auto; }
+  .side h4 { display: none; }
+  .side a { white-space: nowrap; border: 1px solid var(--line); border-left-width: 1px; }
+  .topnav { padding: 10px 16px; flex-wrap: wrap; }
+  .themes { margin-left: 0; }
+  .stage { padding: 34px 12px 20px; }
+  .dx-select { width: 130px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+</style>
+
+<header class="topnav">
+  <div class="brand">
+    <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#3B82F6"/></linearGradient></defs><path d="M4 6h8.5c6 0 10 4 10 10s-4 10-10 10H4z" fill="none" stroke="url(#g)" stroke-width="3" stroke-linejoin="round"/><path d="M17 6l11 20M28 6L17 26" stroke="url(#g)" stroke-width="3" stroke-linecap="round"/></svg>
+    DX-UI <small>v0.0.0.2</small>
+  </div>
+  <div class="themes" role="group" aria-label="Preview theme">
+    <button type="button" data-theme-set="DX-SR" aria-pressed="true"><i style="background:linear-gradient(90deg,#3B82F6,#22D3EE)"></i>DX-SR</button>
+    <button type="button" data-theme-set="Midnight" aria-pressed="false"><i style="background:linear-gradient(90deg,#8B5CF6,#EC4899)"></i>Midnight</button>
+    <button type="button" data-theme-set="Emerald" aria-pressed="false"><i style="background:linear-gradient(90deg,#10B981,#A3E635)"></i>Emerald</button>
+    <button type="button" data-theme-set="Crimson" aria-pressed="false"><i style="background:linear-gradient(90deg,#F43F5E,#FB923C)"></i>Crimson</button>
+    <button type="button" data-glass-set aria-pressed="false"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M7 15l8-8M11 17l6-6"/></svg>Glass</button>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="side" aria-label="Components">
+    <h4>Getting Started</h4>
+    <a href="#install"><i data-lucide="download"></i>Installation</a>
+    <a href="#window"><i data-lucide="app-window"></i>Window</a>
+    <a href="#tag"><i data-lucide="tag"></i>Tag</a>
+    <a href="#tabs"><i data-lucide="panel-left"></i>Sidebar &amp; Tab</a>
+    <a href="#section"><i data-lucide="rows-3"></i>Section</a>
+    <h4>Elements</h4>
+    <a href="#toggle"><i data-lucide="toggle-right"></i>Toggle</a>
+    <a href="#button"><i data-lucide="mouse-pointer-click"></i>Button</a>
+    <a href="#slider"><i data-lucide="sliders-horizontal"></i>Slider</a>
+    <a href="#input"><i data-lucide="text-cursor-input"></i>Input</a>
+    <a href="#dropdown"><i data-lucide="list"></i>Dropdown</a>
+    <a href="#keybind"><i data-lucide="keyboard"></i>Keybind</a>
+    <a href="#colorpicker"><i data-lucide="pipette"></i>Colorpicker</a>
+    <a href="#paragraph"><i data-lucide="file-text"></i>Paragraph</a>
+    <a href="#text"><i data-lucide="type"></i>Label &amp; Code</a>
+    <h4>Feedback</h4>
+    <a href="#notify"><i data-lucide="bell"></i>Notify</a>
+    <a href="#dialog"><i data-lucide="message-square"></i>Dialog</a>
+    <h4>Advanced</h4>
+    <a href="#element-api"><i data-lucide="box"></i>Element API</a>
+    <a href="#themes"><i data-lucide="palette"></i>Themes</a>
+    <a href="#config"><i data-lucide="save"></i>Config</a>
+    <a href="#glass"><i data-lucide="sparkles"></i>Glass</a>
+    <a href="#cursor"><i data-lucide="mouse-pointer-2"></i>Cursor</a>
+    <a href="#mobile"><i data-lucide="smartphone"></i>Mobile</a>
+    <a href="#icons"><i data-lucide="image"></i>Icons</a>
+  </nav>
+
+  <main class="dx-root">
+    <div class="hero" id="top">
+      <h1><span>DX-UI</span> for Roblox</h1>
+      <p>The DX-SR hub interface library. You create one window, add tabs, and then call an element for each feature. Every element supports Lucide icons by name, saves to configs through its <code class="inline">Flag</code>, and animates out of the box. The API follows WindUI, so existing hubs move over with few changes.</p>
+      <ul class="facts">
+        <li><b>1</b> file, no dependencies</li>
+        <li><b>14</b> elements</li>
+        <li><b>4</b> built-in themes</li>
+        <li>Lucide icon set</li>
+      </ul>
+      <div class="scene" id="scene"><div class="tilt" id="tilt">
+        <div class="win dx" id="demo-window">
+          <div class="win-top">
+            <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><path d="M4 6h8.5c6 0 10 4 10 10s-4 10-10 10H4z" fill="none" stroke="var(--dx-accent2)" stroke-width="3" stroke-linejoin="round"/><path d="M17 6l11 20M28 6L17 26" stroke="var(--dx-accent)" stroke-width="3" stroke-linecap="round"/></svg>
+            <div class="win-title"><b>DX-SR Hub</b><span>Professional Hub</span></div>
+            <div class="dx-tags">
+              <span class="dx-tag" style="--c:#30FF6A"><i data-lucide="github"></i>v0.0.0.2</span>
+              <span class="dx-tag" style="--c:#FBBF24"><i data-lucide="crown"></i>Premium</span>
+            </div>
+            <div class="win-ctrl">
+              <button type="button" aria-label="Minimize"><i data-lucide="minus"></i></button>
+              <button type="button" aria-label="Maximize"><i data-lucide="maximize-2"></i></button>
+              <button type="button" aria-label="Close" data-dialog="close"><i data-lucide="x"></i></button>
+            </div>
+          </div>
+          <div class="win-body">
+            <div class="win-side">
+              <label class="dx-box win-search"><i data-lucide="search"></i><input id="win-search" placeholder="Search" aria-label="Search tabs"></label>
+              <div class="win-tabs">
+                <div class="win-group"><i data-lucide="house"></i>MAIN<i data-lucide="chevron-down"></i></div>
+                <div class="win-group-body"><div>
+                  <button type="button" class="win-tab active" data-tab="farm"><i data-lucide="tractor"></i>Farming</button>
+                  <button type="button" class="win-tab" data-tab="drag"><i data-lucide="flag"></i>Drag Race</button>
+                </div></div>
+                <div class="win-group"><i data-lucide="layers"></i>MISC<i data-lucide="chevron-down"></i></div>
+                <div class="win-group-body"><div>
+                  <button type="button" class="win-tab" data-tab="settings"><i data-lucide="settings"></i>Settings</button>
+                </div></div>
+              </div>
+              <div class="win-user"><i></i><div><b>Hamburger</b><span>@hamadddd_s</span></div></div>
+            </div>
+            <div class="win-content">
+              <div class="win-page show" data-page="farm">
+                <h5>Farming</h5><p>Automate every job with one click.</p>
+                <div class="dx-sec">
+                  <div class="dx-sec-head"><i data-lucide="zap"></i>Auto Farm<hr><i data-lucide="chevron-down"></i></div>
+                  <div class="dx-sec-body"><div>
+                    <div class="dx-card click" data-toggle><div class="dx-head"><div class="dx-txt"><span class="dx-t">Auto Office Worker</span></div><span class="dx-switch"><i></i></span></div></div>
+                    <div class="dx-card"><div class="dx-head"><div class="dx-txt"><span class="dx-t">Walk Speed</span></div><span class="dx-box dx-num">80</span></div><div class="dx-slider"><div class="dx-track" data-min="16" data-max="200" data-value="80"><div class="dx-fill"></div><div class="dx-knob"></div></div></div></div>
+                    <div class="dx-card click dx-dd"><div class="dx-head"><div class="dx-txt"><span class="dx-t">Vehicle</span></div><span class="dx-box dx-select"><span>Kawzaki Ninja</span><i data-lucide="chevron-down"></i></span></div><div class="dx-expand"><div><div class="dx-options"><div class="dx-opt">Yamahax MioSporty<i data-lucide="check"></i></div><div class="dx-opt sel">Kawzaki Ninja<i data-lucide="check"></i></div><div class="dx-opt">Hando Vario<i data-lucide="check"></i></div></div></div></div></div>
+                  </div></div>
+                </div>
+              </div>
+              <div class="win-page" data-page="drag">
+                <h5>Drag Race</h5>
+                <div class="dx-card click on" data-toggle><div class="dx-head"><div class="dx-txt"><span class="dx-t">Auto Drag Race</span></div><span class="dx-switch"><i></i></span></div></div>
+                <div class="dx-card click" data-toggle><div class="dx-head"><div class="dx-txt"><span class="dx-t">Speed Cracker</span></div><span class="dx-switch"><i></i></span></div></div>
+              </div>
+              <div class="win-page" data-page="settings">
+                <h5>Settings</h5>
+                <div class="dx-card"><div class="dx-head"><div class="dx-txt"><span class="dx-t">Toggle UI</span></div><span class="dx-key" tabindex="0">RightShift</span></div></div>
+                <div class="dx-card click" data-button data-notify="Success" data-title="Config Saved" data-msg="Saved to DX-SR/configs/default.json."><div class="dx-head"><i data-lucide="save"></i><div class="dx-txt"><span class="dx-t">Save Config</span></div><i class="dx-arrow" data-lucide="mouse-pointer-click"></i></div></div>
+              </div>
+              <i class="win-resize" data-lucide="move-diagonal-2"></i>
+            </div>
+          </div>
+          <div class="dx-toasts"></div>
+        </div>
+        <div class="float float-toast dx" aria-hidden="true"><div class="dx-toast" style="--k:var(--dx-ok)"><div class="dx-toast-head"><b><i data-lucide="circle-check"></i></b><span>Config Saved</span></div><p>Saved to DX-SR/configs/default.json.</p><u></u></div></div>
+        <div class="float float-glass dx"><div class="dx-card click" data-glass-toggle><div class="dx-head"><i data-lucide="sparkles"></i><div class="dx-txt"><span class="dx-t">Glass Effect</span><span class="dx-d">Window:SetGlass(true)</span></div><span class="dx-switch"><i></i></span></div></div></div>
+      </div></div>
+    </div>
+
+    <section class="doc" id="install">
+      <h2><i data-lucide="download"></i>Installation</h2>
+      <p>Load the library once at the top of your script. It returns the <code class="inline">DX</code> table that every other call starts from.</p>
+      <div class="codebox solo"><pre data-code="install"></pre></div>
+    </section>
+
+    <section class="doc" id="window">
+      <h2><i data-lucide="app-window"></i>Window</h2>
+      <p>The window holds the topbar, the sidebar and the tab pages. It opens with a pop-in animation, can be dragged by the topbar, resized from the bottom-right corner, and is hidden or shown with the toggle key.</p>
+      <p>Every instance is named after what it holds, such as <code class="inline">[Group] Main</code>, <code class="inline">[Tab] Farming</code>, <code class="inline">[Section] Auto Farm</code> and <code class="inline">[Toggle] Auto Office Worker</code>, so the explorer reads like a set of folders.</p>
+      <div class="codebox solo"><pre data-code="window"></pre></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Option</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>Title</td><td>string</td><td>Name in the topbar and on the floating open button.</td></tr>
+          <tr><td>Author</td><td>string</td><td>Small line under the title.</td></tr>
+          <tr><td>Icon</td><td>string</td><td>Lucide name, rbxassetid, rbxthumb or asset id number.</td></tr>
+          <tr><td>Folder</td><td>string</td><td>Workspace folder for configs. Default <code class="inline">"DX-UI"</code>.</td></tr>
+          <tr><td>Size</td><td>UDim2</td><td>Offset size. Default 660 × 460, clamped to the screen.</td></tr>
+          <tr><td>MinSize / MaxSize</td><td>Vector2</td><td>Resize limits. Default 520 × 340 and 960 × 680.</td></tr>
+          <tr><td>ToggleKey</td><td>Enum.KeyCode</td><td>Key that hides and shows the window. Default RightShift.</td></tr>
+          <tr><td>Theme</td><td>string</td><td>Starting theme name.</td></tr>
+          <tr><td>SideBarWidth</td><td>number</td><td>Sidebar width in pixels. Default 200.</td></tr>
+          <tr><td>HideSearchBar</td><td>boolean</td><td>Removes the tab search field.</td></tr>
+          <tr><td>ScrollBarEnabled</td><td>boolean</td><td>Set to false to hide page scroll bars.</td></tr>
+          <tr><td>Resizable</td><td>boolean</td><td>Set to false to remove the resize handle.</td></tr>
+          <tr><td>User</td><td>false | table</td><td>User card at the bottom of the sidebar. <code class="inline">{Enabled = true, Anonymous = false, Callback = fn}</code></td></tr>
+          <tr><td>Glass</td><td>boolean</td><td>Starts with translucent glass panels. See Glass.</td></tr>
+          <tr><td>Scale</td><td>number</td><td>Fixed UI scale. Leave empty to fit the screen automatically. See Mobile.</td></tr>
+          <tr><td>Transparent</td><td>boolean</td><td>Same as Glass, kept for WindUI scripts.</td></tr>
+          <tr><td>Cursor</td><td>boolean</td><td>Draws the DX cursor while the mouse is over the window. Default true. See Cursor.</td></tr>
+        </tbody>
+      </table></div>
+      <h3>Window methods</h3>
+      <div class="methods"><code>:Tab()</code><code>:Section()</code><code>:Tag()</code><code>:SelectTab(tab | index)</code><code>:SetTitle()</code><code>:SetAuthor()</code><code>:Open()</code><code>:Close()</code><code>:Toggle()</code><code>:GetState()</code><code>:SetToggleKey()</code><code>:OnOpen(fn)</code><code>:OnClose(fn)</code><code>:OnDestroy(fn)</code><code>:Dialog()</code><code>:Notify()</code><code>:SetGlass(bool)</code><code>:SetScale(n)</code><code>:Divider()</code><code>:Space()</code><code>:EditOpenButton({Title, Icon, Enabled})</code><code>.Hovering</code><code>:LockAll()</code><code>:UnlockAll()</code><code>:Destroy()</code></div>
+    </section>
+
+    <section class="doc" id="tag">
+      <h2><i data-lucide="tag"></i>Tag</h2>
+      <p>Small colored badges next to the window title, for a version number or a plan name. They pop in when created.</p>
+      <div class="stage"><span class="stage-label">Preview</span><div class="dx dx-tags" id="tag-demo"><span class="dx-tag" style="--c:#30FF6A"><i data-lucide="github"></i>v0.0.0.2</span><span class="dx-tag" style="--c:#FBBF24"><i data-lucide="crown"></i>Premium</span><span class="dx-tag" style="--c:#22D3EE"><i data-lucide="sparkles"></i>Beta</span></div></div>
+      <div class="codebox"><pre data-code="tag"></pre></div>
+      <div class="methods"><code>:SetTitle(text)</code><code>:SetColor(Color3)</code><code>:Destroy()</code></div>
+    </section>
+
+    <section class="doc" id="tabs">
+      <h2><i data-lucide="panel-left"></i>Sidebar &amp; Tab</h2>
+      <p><code class="inline">Window:Section</code> creates a collapsible group in the sidebar, and <code class="inline">Group:Tab</code> adds a tab inside it. Use <code class="inline">Window:Tab</code> for a tab without a group. The first tab you create opens automatically. The sidebar search matches tab titles and the titles of elements inside each tab.</p>
+      <div class="codebox solo"><pre data-code="tabs"></pre></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Option</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>Title</td><td>string</td><td>Group or tab name.</td></tr>
+          <tr><td>Icon</td><td>string</td><td>Lucide icon name.</td></tr>
+          <tr><td>Opened</td><td>boolean</td><td>Group only. Starts expanded. Default true.</td></tr>
+          <tr><td>Desc</td><td>string</td><td>Tab only. Line under the page heading.</td></tr>
+          <tr><td>ShowTitle</td><td>boolean</td><td>Tab only. Set to false to hide the page heading.</td></tr>
+          <tr><td>Locked</td><td>boolean</td><td>Tab only. Shows a lock and blocks selecting the tab.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="methods"><code>Tab:Select()</code><code>Tab:SetTitle()</code><code>Tab:Lock()</code><code>Tab:Unlock()</code><code>Tab:Destroy()</code><code>Group:Open()</code><code>Group:Close()</code></div>
+    </section>
+
+    <section class="doc" id="section">
+      <h2><i data-lucide="rows-3"></i>Section</h2>
+      <p>Works like WindUI. Call <code class="inline">Tab:Section</code> and keep adding elements to the tab, and the section is a plain heading. Add elements to the section object instead and it becomes collapsible. <code class="inline">Box = true</code> draws a border around it.</p>
+      <div class="stage"><span class="stage-label">Preview</span><div class="dx dx-pane">
+        <div class="dx-sec">
+          <div class="dx-sec-head"><i data-lucide="webhook"></i>Webhook<hr><i data-lucide="chevron-down"></i></div>
+          <div class="dx-sec-body"><div>
+            <div class="dx-card click" data-toggle><div class="dx-head"><div class="dx-txt"><span class="dx-t">Enable Webhook</span></div><span class="dx-switch"><i></i></span></div></div>
+            <div class="dx-card"><div class="dx-head"><div class="dx-txt"><span class="dx-t">Webhook URL</span></div><label class="dx-box" style="width:170px"><i data-lucide="link"></i><input id="sec-url" placeholder="https://discord.com/..." aria-label="Webhook URL"></label></div></div>
+          </div></div>
+        </div>
+      </div></div>
+      <div class="codebox"><pre data-code="section"></pre></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Option</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>Title</td><td>string</td><td>Heading text.</td></tr>
+          <tr><td>Icon</td><td>string</td><td>Icon before the heading.</td></tr>
+          <tr><td>Box</td><td>boolean</td><td>Draws a border around the section.</td></tr>
+          <tr><td>Opened</td><td>boolean</td><td>Starts expanded. Default true.</td></tr>
+          <tr><td>TextSize</td><td>number</td><td>Heading size. Default 15.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="methods"><code>:Open()</code><code>:Close()</code><code>:SetTitle()</code><code>:Destroy()</code></div>
+    </section>
+
+    <div class="group-title">Elements</div>
+
+    <section class="doc" id="toggle">
+      <h2><i data-lucide="toggle-right"></i>Toggle</h2>
+      <p>An on/off switch. The callback receives the new state. Calling <code class="inline">:Set</code> also runs the callback unless you pass <code class="inline">true</code> as the second argument.</p>
+      <div class="stage"><span class="stage-label">Preview</span><div class="dx dx-pane">
+        <div class="dx-card click" data-toggle><div class="dx-head"><div class="dx-txt"><span class="dx-t">Auto Office Worker</span><span class="dx-d">Answer questions and print documents automatically</span></div><span class="dx-switch"><i></i></span></div></div>
+        <div class="dx-card click on" data-toggle><div class="dx-head"><div class="dx-txt"><span class="dx-t">Noclip</span></div><span class="dx-switch"><i></i></span></div></div>
+      </div></div>
+      <div class="codebox"><pre data-code="toggle"></pre></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Option</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>Title / Desc</td><td>string</td><td>Label and optional second line.</td></tr>
+          <tr><td>Icon</td><td>string</td><td>Icon left of the title.</td></tr>
+          <tr><td>Type</td><td>string</td><td><code class="inline">"Toggle"</code> or <code class="inline">"Checkbox"</code>.</td></tr>
+          <tr><td>Value</td><td>boolean</td><td>Starting state. Default false. If true, the callback runs once on creation.</td></tr>
+          <tr><td>Flag</td><td>string</td><td>Config key. Also stores the element in <code class="inline">DX.Flags</code>.</td></tr>
+          <tr><td>Locked</td><td>boolean</td><td>Starts locked.</td></tr>
+          <tr><td>Callback</td><td>function(state)</td><td>Runs on every change.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="methods"><code>:Set(state, silent)</code><code>:Get()</code></div>
+    </section>
+
+    <section class="doc" id="button">
+      <h2><i data-lucide="mouse-pointer-click"></i>Button</h2>
+      <p>Runs the callback on click. The pointer icon on the right nudges when pressed.</p>
+      <div class="stage"><span class="stage-label">Preview</span><div class="dx dx-pane">
+        <div class="dx-card click" data-button data-notify="Success" data-title="Teleport" data-msg="Teleported to the office."><div class="dx-head"><i data-lucide="map-pin"></i><div class="dx-txt"><span class="dx-t">Teleport to Office</span><span class="dx-d">Bypass teleport to the office start point</span></div><i class="dx-arrow" data-lucide="mouse-pointer-click"></i></div></div>
+      </div><div class="dx-toasts dx"></div></div>
+      <div class="codebox"><pre data-code="button"></pre></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Option</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>Title / Desc</td><td>string</td><td>Label and optional second line.</td></tr>
+          <tr><td>Icon</td><td>string</td><td>Icon left of the title.</td></tr>
+          <tr><td>ButtonIcon</td><td>string</td><td>Icon on the right. Default <code class="inline">"mouse-pointer-click"</code>.</td></tr>
+          <tr><td>Callback</td><td>function()</td><td>Runs on click.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="doc" id="slider">
+      <h2><i data-lucide="sliders-horizontal"></i>Slider</h2>
+      <p>Drag the track or type a number in the box. Values snap to <code class="inline">Step</code>, and decimal steps keep their decimals.</p>
+      <div class="stage"><span class="stage-label">Preview</span><div class="dx dx-pane">
+        <div class="dx-card"><div class="dx-head"><div class="dx-txt"><span class="dx-t">Walk Speed</span><span class="dx-d">Character movement speed</span></div><span class="dx-box dx-num">80 sps</span></div><div class="dx-slider"><div class="dx-track" data-min="16" data-max="200" data-value="80" data-suffix=" sps"><div class="dx-fill"></div><div class="dx-knob"></div></div></div></div>
+        <div class="dx-card"><div class="dx-head"><div class="dx-txt"><span class="dx-t">Tween Delay</span></div><span class="dx-box dx-num">0.5</span></div><div class="dx-slider"><div class="dx-track" data-min="0" data-max="3" data-step="0.1" data-value="0.5"><div class="dx-fill"></div><div class="dx-knob"></div></div></div></div>
+      </div></div>
+      <div class="codebox"><pre data-code="slider"></pre></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Option</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>Value</td><td>table</td><td><code class="inline">{Min = 0, Max = 100, Default = 50}</code>. Min, Max and Default also work as top-level options.</td></tr>
+          <tr><td>Step</td><td>number</td><td>Snap increment. Default 1.</td></tr>
+          <tr><td>Suffix</td><td>string</td><td>Text shown after the number.</td></tr>
+          <tr><td>Flag</td><td>string</td><td>Config key.</td></tr>
+          <tr><td>Callback</td><td>function(value)</td><td>Runs while dragging and on typed input.</td></tr>
+          <tr><td>OnInputComplete</td><td>function(value)</td><td>Runs once when the drag is released.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="methods"><code>:Set(value, silent)</code><code>:Get()</code><code>:SetMin(n)</code><code>:SetMax(n)</code></div>
+    </section>
+
+    <section class="doc" id="input">
+      <h2><i data-lucide="text-cursor-input"></i>Input</h2>
+      <p>A text field on the right of the card, or a full-width box with <code class="inline">Type = "Textarea"</code>. The callback runs when the field loses focus.</p>
+      <div class="stage"><span class="stage-label">Preview</span><div class="dx dx-pane">
+        <div class="dx-card"><div class="dx-head"><div class="dx-txt"><span class="dx-t">Webhook URL</span></div><label class="dx-box" style="width:170px"><i data-lucide="link"></i><input id="in-url" placeholder="https://discord.com/..." aria-label="Webhook URL"></label></div></div>
+        <div class="dx-card"><div class="dx-head"><div class="dx-txt"><span class="dx-t">Target Amount</span></div><label class="dx-box" style="width:170px"><input id="in-num" inputmode="numeric" placeholder="1000000" aria-label="Target amount"></label></div></div>
+      </div></div>
+      <div class="codebox"><pre data-code="input"></pre></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Option</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>Placeholder</td><td>string</td><td>Hint text when empty.</td></tr>
+          <tr><td>Value</td><td>string</td><td>Starting text.</td></tr>
+          <tr><td>Type</td><td>string</td><td><code class="inline">"Textarea"</code> for a multi-line box.</td></tr>
+          <tr><td>InputIcon</td><td>string</td><td>Icon inside the field.</td></tr>
+          <tr><td>InputWidth</td><td>number</td><td>Field width. Default 170.</td></tr>
+          <tr><td>Numeric</td><td>boolean</td><td>Only allows digits, dot and minus.</td></tr>
+          <tr><td>AcceptedCharacters</td><td>function(text)</td><td>Return the cleaned text to filter input.</td></tr>
+          <tr><td>ClearTextOnFocus</td><td>boolean</td><td>Clears the field when clicked.</td></tr>
+          <tr><td>OnChanged</td><td>function(text)</td><td>Runs on every keystroke.</td></tr>
+          <tr><td>Callback</td><td>function(text, enter)</td><td>Runs on focus lost. <code class="inline">enter</code> is true when Enter was pressed.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="methods"><code>:Set(text, silent)</code><code>:Get()</code><code>:SetPlaceholder(text)</code></div>
+    </section>
+
+    <section class="doc" id="dropdown">
+      <h2><i data-lucide="list"></i>Dropdown</h2>
+      <p>Opens inside the card with a staggered list. Single mode closes after a pick; <code class="inline">Multi</code> keeps it open and returns a table. A search field appears with <code class="inline">Search = true</code> or when there are more than 8 options.</p>
+      <div class="stage"><span class="stage-label">Preview</span><div class="dx dx-pane">
+        <div class="dx-card click dx-dd"><div class="dx-head"><div class="dx-txt"><span class="dx-t">Vehicle</span></div><span class="dx-box dx-select"><span>Yamahax MioSporty</span><i data-lucide="chevron-down"></i></span></div><div class="dx-expand"><div><div class="dx-options"><div class="dx-opt sel">Yamahax MioSporty<i data-lucide="check"></i></div><div class="dx-opt">Sizuki SatriaFU<i data-lucide="check"></i></div><div class="dx-opt">Kawzaki Ninja<i data-lucide="check"></i></div><div class="dx-opt">Hando Vario<i data-lucide="check"></i></div></div></div></div></div>
+        <div class="dx-card click dx-dd" data-multi><div class="dx-head"><div class="dx-txt"><span class="dx-t">Jobs</span><span class="dx-d">Pick multiple jobs</span></div><span class="dx-box dx-select"><span>Office Worker</span><i data-lucide="chevron-down"></i></span></div><div class="dx-expand"><div><div class="dx-options"><div class="dx-opt">Courier<i data-lucide="check"></i></div><div class="dx-opt">Barista<i data-lucide="check"></i></div><div class="dx-opt sel">Office Worker<i data-lucide="check"></i></div><div class="dx-opt">Drag Race<i data-lucide="check"></i></div></div></div></div></div>
+      </div></div>
+      <div class="codebox"><pre data-code="dropdown"></pre></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Option</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>Values</td><td>table</td><td>Strings, or <code class="inline">{Title = "Name", Icon = "car"}</code> tables.</td></tr>
+          <tr><td>Value</td><td>any</td><td>Selected value, its index, or a table when Multi.</td></tr>
+          <tr><td>Multi</td><td>boolean</td><td>Allows several picks.</td></tr>
+          <tr><td>AllowNone</td><td>boolean</td><td>Clicking the selected option clears it. Default true.</td></tr>
+          <tr><td>Search</td><td>boolean</td><td>Shows the search field.</td></tr>
+          <tr><td>MaxHeight</td><td>number</td><td>List height before it scrolls. Default 200.</td></tr>
+          <tr><td>DropdownWidth</td><td>number</td><td>Selector width. Default 170.</td></tr>
+          <tr><td>Callback</td><td>function(value)</td><td>Gets a string, or a table when Multi.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="methods"><code>:Select(value, silent)</code><code>:Get()</code><code>:Refresh(values)</code><code>:InsertOptions(values)</code><code>:ClearOptions()</code><code>:Open()</code><code>:Close()</code></div>
+    </section>
+
+    <section class="doc" id="keybind">
+      <h2><i data-lucide="keyboard"></i>Keybind</h2>
+      <p>Click the key box, then press a key to bind it. Escape or Backspace clears it. <code class="inline">Pressed</code> runs every time the bound key is pressed outside a text box.</p>
+      <div class="stage"><span class="stage-label">Preview · click the box, then press a key</span><div class="dx dx-pane">
+        <div class="dx-card"><div class="dx-head"><div class="dx-txt"><span class="dx-t">Toggle Farm</span><span class="dx-d">Start or stop the farm</span></div><span class="dx-key" tabindex="0" role="button">F</span></div></div>
+      </div></div>
+      <div class="codebox"><pre data-code="keybind"></pre></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Option</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>Value</td><td>string | KeyCode</td><td>Starting key, for example <code class="inline">"RightShift"</code>.</td></tr>
+          <tr><td>Callback</td><td>function(key)</td><td>Runs when the bind changes.</td></tr>
+          <tr><td>Pressed</td><td>function(key)</td><td>Runs when the key is pressed.</td></tr>
+          <tr><td>OnBinded</td><td>function(KeyCode)</td><td>Runs after a new key is picked.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="methods"><code>:Set(key, silent)</code><code>:Get()</code><code>:GetKeyCode()</code><code>:Unbind()</code></div>
+    </section>
+
+    <section class="doc" id="colorpicker">
+      <h2><i data-lucide="pipette"></i>Colorpicker</h2>
+      <p>Click the card to open a saturation square, a hue bar and a hex field. <code class="inline">:Set</code> runs the callback, so a color loaded from a config is applied right away.</p>
+      <div class="stage"><span class="stage-label">Preview</span><div class="dx dx-pane">
+        <div class="dx-card click dx-cp open"><div class="dx-head"><div class="dx-txt"><span class="dx-t">Rank Color</span></div><span class="dx-swatch"></span></div><div class="dx-expand"><div><div class="dx-cp-body">
+          <div class="dx-cp-area"><div class="dx-sv"><i></i></div><div class="dx-hue"><i></i></div></div>
+          <div class="dx-cp-row"><span class="dx-prev"></span><span class="dx-box dx-hex"></span><span class="dx-rgb"></span></div>
+        </div></div></div></div>
+      </div></div>
+      <div class="codebox"><pre data-code="colorpicker"></pre></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Option</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>Default</td><td>Color3</td><td>Starting color.</td></tr>
+          <tr><td>Transparency</td><td>number</td><td>Stored and passed to the callback.</td></tr>
+          <tr><td>Flag</td><td>string</td><td>Config key. Saved as hex.</td></tr>
+          <tr><td>Callback</td><td>function(color, transparency)</td><td>Runs on every change.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="methods"><code>:Set(color, transparency, silent)</code><code>:Get()</code><code>:SetAlpha(n)</code><code>:Open()</code><code>:Close()</code></div>
+    </section>
+
+    <section class="doc" id="paragraph">
+      <h2><i data-lucide="file-text"></i>Paragraph</h2>
+      <p>A read-only card for status text. Update the text with <code class="inline">:SetDesc</code> from a loop to show live values. Optional color bar and action buttons.</p>
+      <div class="stage"><span class="stage-label">Preview</span><div class="dx dx-pane">
+        <div class="dx-card dx-para"><div class="dx-head"><div class="dx-txt"><span class="dx-t">Status</span><span class="dx-d" id="para-desc">Answering question 12</span></div></div>
+          <div class="dx-btnrow"><button type="button" class="dx-btn primary" id="para-refresh"><i data-lucide="refresh-cw"></i>Refresh</button><button type="button" class="dx-btn"><i data-lucide="copy"></i>Copy Log</button></div></div>
+      </div></div>
+      <div class="codebox"><pre data-code="paragraph"></pre></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Option</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>Title / Desc</td><td>string</td><td>Heading and body text. Rich text works.</td></tr>
+          <tr><td>Color</td><td>string | Color3</td><td>Bar color. A theme key such as <code class="inline">"Accent"</code>, or a Color3.</td></tr>
+          <tr><td>Image</td><td>string</td><td>Icon before the title.</td></tr>
+          <tr><td>Thumbnail</td><td>string</td><td>Wide image under the text. <code class="inline">ThumbnailSize</code> sets its height.</td></tr>
+          <tr><td>Buttons</td><td>table</td><td><code class="inline">{{Title, Icon, Variant, Callback}}</code>. Variant is Primary, Secondary or Tertiary.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="methods"><code>:SetTitle(text)</code><code>:SetDesc(text)</code><code>:SetImage(icon)</code><code>:SetThumbnail(image)</code></div>
+    </section>
+
+    <section class="doc" id="text">
+      <h2><i data-lucide="type"></i>Label, Divider, Space &amp; Code</h2>
+      <p>Plain helpers for spacing and text. <code class="inline">Code</code> shows a monospace block with a copy button.</p>
+      <div class="stage"><span class="stage-label">Preview</span><div class="dx dx-pane">
+        <div class="dx-label">Teleport locations coming soon.</div>
+        <div class="dx-sub">Updated every 5 seconds</div>
+        <div class="dx-divider"></div>
+        <div class="dx-code"><div>Loader<i data-lucide="copy"></i></div><pre>local DX = loadstring(game:HttpGet("..."))()</pre></div>
+      </div></div>
+      <div class="codebox"><pre data-code="text"></pre></div>
+      <div class="methods"><code>Code:SetCode(text)</code><code>Code:OnCopy(fn)</code><code>Label:Set(text)</code></div>
+    </section>
+
+    <div class="group-title">Feedback</div>
+
+    <section class="doc" id="notify">
+      <h2><i data-lucide="bell"></i>Notify</h2>
+      <p>Toasts slide in from the bottom right with a countdown bar. They stack, and the close button dismisses them early.</p>
+      <div class="stage" style="min-height:260px;align-items:flex-start"><span class="stage-label">Preview · click a type</span>
+        <div class="dx" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+          <button type="button" class="dx-btn" data-notify="Info"><i data-lucide="info"></i>Info</button>
+          <button type="button" class="dx-btn" data-notify="Success"><i data-lucide="circle-check"></i>Success</button>
+          <button type="button" class="dx-btn" data-notify="Warning"><i data-lucide="triangle-alert"></i>Warning</button>
+          <button type="button" class="dx-btn" data-notify="Error"><i data-lucide="circle-x"></i>Error</button>
+        </div>
+        <div class="dx-toasts dx"></div>
+      </div>
+      <div class="codebox"><pre data-code="notify"></pre></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Option</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>Title</td><td>string</td><td>Heading.</td></tr>
+          <tr><td>Content</td><td>string</td><td>Body text. Rich text works.</td></tr>
+          <tr><td>Type</td><td>string</td><td>Info, Success, Warning or Error. Sets the icon and color.</td></tr>
+          <tr><td>Icon</td><td>string</td><td>Replaces the type icon.</td></tr>
+          <tr><td>Duration</td><td>number</td><td>Seconds on screen. Default 5.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="methods"><code>:Close()</code><code>:SetTitle(text)</code><code>:SetContent(text)</code></div>
+    </section>
+
+    <section class="doc" id="dialog">
+      <h2><i data-lucide="message-square"></i>Dialog</h2>
+      <p>A centered confirmation box that dims the screen. Every button closes it after running its callback. <code class="inline">DX:Popup</code> takes the same options and works without a window.</p>
+      <div class="stage" style="min-height:240px;align-items:center"><span class="stage-label">Preview</span>
+        <div class="dx"><button type="button" class="dx-btn primary" data-dialog="reset"><i data-lucide="rotate-ccw"></i>Reset Config</button></div>
+      </div>
+      <div class="codebox"><pre data-code="dialog"></pre></div>
+      <div class="methods"><code>:Close()</code><code>:SetTitle(text)</code><code>:SetContent(text)</code></div>
+    </section>
+
+    <div class="group-title">Advanced</div>
+
+    <section class="doc" id="element-api">
+      <h2><i data-lucide="box"></i>Element API</h2>
+      <p>Every element returns an object you keep in a variable. Elements with a <code class="inline">Flag</code> can also be found later through <code class="inline">DX.Flags</code>.</p>
+      <div class="codebox solo"><pre data-code="element"></pre></div>
+      <div class="methods"><code>:SetTitle(text)</code><code>:SetDesc(text)</code><code>:Lock()</code><code>:Unlock()</code><code>:SetVisible(bool)</code><code>:Destroy()</code></div>
+    </section>
+
+    <section class="doc" id="themes">
+      <h2><i data-lucide="palette"></i>Themes</h2>
+      <p>Switching a theme recolors the open window with a short fade. Try the theme buttons at the top of this page. Custom themes start from DX-SR and only need the keys you change. WindUI theme tables also work: <code class="inline">Outline</code>, <code class="inline">Placeholder</code> and <code class="inline">Button</code> map to Stroke, SubText and Element.</p>
+      <div class="codebox solo"><pre data-code="themes"></pre></div>
+      <div class="methods"><code>Background</code><code>Element</code><code>ElementHover</code><code>Field</code><code>Stroke</code><code>Accent</code><code>Accent2</code><code>Text</code><code>SubText</code><code>Icon</code><code>Success</code><code>Warning</code><code>Error</code></div>
+    </section>
+
+    <section class="doc" id="config">
+      <h2><i data-lucide="save"></i>Config</h2>
+      <p>Every element with a <code class="inline">Flag</code> is saved. Files go to <code class="inline">Folder/configs/name.json</code>. Loading runs each element's callback, so toggles start their loops and colors apply right away.</p>
+      <div class="codebox solo"><pre data-code="config"></pre></div>
+      <div class="methods"><code>:CreateConfig(name)</code><code>Config:Register(flag, element)</code><code>Config:Save()</code><code>Config:Load()</code><code>Config:Delete()</code><code>:AllConfigs()</code><code>:SetAutoLoad(name)</code><code>:LoadAutoLoad()</code></div>
+    </section>
+
+    <section class="doc" id="glass">
+      <h2><i data-lucide="sparkles"></i>Glass</h2>
+      <p>Glass mode turns the window, element cards, fields, notifications and dialogs translucent with a soft sheen, so the game shows through. Roblox cannot blur what is behind a GUI, so in game the glass is see-through without the blur this page adds. Switch it on with the Glass button at the top, or the floating card on the window preview.</p>
+      <div class="codebox solo"><pre data-code="glass"></pre></div>
+      <div class="methods"><code>Glass = true</code><code>Window:SetGlass(bool)</code><code>DX:SetGlass(bool)</code><code>DX.Glass</code></div>
+    </section>
+
+    <section class="doc" id="cursor">
+      <h2><i data-lucide="mouse-pointer-2"></i>Cursor</h2>
+      <p>Some games hide the mouse or draw their own crosshair, which makes the menu hard to click. While the mouse is over the window, the open button or a dialog, DX-UI hides the game cursor and draws its own arrow on top. It gives control back when the mouse leaves. Read <code class="inline">Window.Hovering</code> to hide a game crosshair yourself, and pass <code class="inline">Cursor = false</code> to turn it off.</p>
+      <div class="codebox solo"><pre data-code="cursor"></pre></div>
+    </section>
+
+    <section class="doc" id="mobile">
+      <h2><i data-lucide="smartphone"></i>Mobile</h2>
+      <p>The window measures the screen when it opens. If it does not fit, it scales down to fit, but never below 0.45. It measures again when the screen rotates or resizes. Dragging, sliders, the colorpicker and the floating open button all work with touch. <code class="inline">DX.IsMobile</code> is true on a touch screen without a keyboard.</p>
+      <div class="codebox solo"><pre data-code="mobile"></pre></div>
+      <div class="methods"><code>Scale = number</code><code>Window:SetScale(n | nil)</code><code>Window.Scale</code><code>DX.IsMobile</code></div>
+    </section>
+
+    <section class="doc" id="icons">
+      <h2><i data-lucide="image"></i>Icons</h2>
+      <p>Any option named <code class="inline">Icon</code> accepts a name from <a href="https://lucide.dev/icons" target="_blank" rel="noopener">lucide.dev/icons</a>, an <code class="inline">rbxassetid://</code> string, an <code class="inline">rbxthumb://</code> string or a plain asset id number. Lucide icons follow the theme colors. Image icons keep their own colors.</p>
+      <div class="codebox solo"><pre data-code="icons"></pre></div>
+    </section>
+  </main>
+</div>
+
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script>
+const LOADER = 'local DX = loadstring(game:HttpGet("https://raw.githubusercontent.com/hamaddddds/DX-UI/main/DX-UI.luau"))()';
+const CODE = {
+install: LOADER,
+window: `local Window = DX:CreateWindow({
+    Title = "DX-SR Hub",
+    Author = "Professional Hub",
+    Icon = "rbxthumb://type=Asset&id=136921327637425&w=420&h=420",
+    Folder = "DX-SR",
+    Size = UDim2.fromOffset(700, 480),
+    ToggleKey = Enum.KeyCode.RightShift,
+    Theme = "DX-SR",
+})`,
+tag: `Window:Tag({Title = "v0.0.0.2", Icon = "github", Color = Color3.fromHex("#30FF6A")})
+Window:Tag({Title = "Premium", Icon = "crown", Color = Color3.fromHex("#FBBF24")})`,
+tabs: `local Main = Window:Section({Title = "Main", Icon = "house", Opened = true})
+local Farm = Main:Tab({Title = "Farming", Icon = "tractor", Desc = "Automate every job with one click."})
+local Drag = Main:Tab({Title = "Drag Race", Icon = "flag"})
+
+local Misc = Window:Section({Title = "Misc", Icon = "layers"})
+local Settings = Misc:Tab({Title = "Settings", Icon = "settings"})
+
+local About = Window:Tab({Title = "About", Icon = "info"})
+Farm:Select()`,
+section: `Farm:Section({
+    Title = "Webhook",
+})
+
+Farm:Toggle({
+    Title = "Enable Webhook",
+    Flag = "WebhookOn",
+    Value = false,
+    Callback = function(state) end
+})
+
+local Advanced = Farm:Section({
+    Title = "Advanced",
+    Box = true,
+    Opened = false,
+})
+
+Advanced:Input({
+    Title = "Webhook URL",
+    InputIcon = "link",
+    Flag = "WebhookUrl",
+    Callback = function(text) end
+})`,
+toggle: `local AutoOffice = Farm:Toggle({
+    Title = "Auto Office Worker",
+    Desc = "Answer questions and print documents automatically",
+    Type = "Toggle",
+    Value = false,
+    Flag = "AutoOffice",
+    Callback = function(state)
+        print("Auto Office", state)
+    end,
+})
+
+AutoOffice:Set(true)
+print(AutoOffice:Get())`,
+button: `Farm:Button({
+    Title = "Teleport to Office",
+    Desc = "Bypass teleport to the office start point",
+    Icon = "map-pin",
+    Callback = function()
+        DX:Notify({Title = "Teleport", Content = "Teleported to the office.", Type = "Success"})
+    end,
+})`,
+slider: `Farm:Slider({
+    Title = "Walk Speed",
+    Value = {Min = 16, Max = 200, Default = 80},
+    Step = 1,
+    Suffix = " sps",
+    Flag = "WalkSpeed",
+    Callback = function(value)
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
+    end,
+})
+
+Farm:Slider({Title = "Tween Delay", Min = 0, Max = 3, Default = 0.5, Step = 0.1, Flag = "TweenDelay"})`,
+input: `Farm:Input({
+    Title = "Webhook URL",
+    Placeholder = "https://discord.com/api/webhooks/...",
+    InputIcon = "link",
+    Flag = "WebhookUrl",
+    Callback = function(text, enterPressed)
+        print(text, enterPressed)
+    end,
+})
+
+Farm:Input({Title = "Target Amount", Numeric = true, Flag = "Target"})
+Farm:Input({Title = "Notes", Type = "Textarea", Placeholder = "Write anything"})`,
+dropdown: `local Vehicle = Farm:Dropdown({
+    Title = "Vehicle",
+    Values = {"Yamahax MioSporty", "Sizuki SatriaFU", "Kawzaki Ninja", "Hando Vario"},
+    Value = "Yamahax MioSporty",
+    Flag = "Vehicle",
+    Callback = function(option)
+        print(option)
+    end,
+})
+
+Farm:Dropdown({
+    Title = "Jobs",
+    Desc = "Pick multiple jobs",
+    Multi = true,
+    Values = {"Courier", "Barista", "Office Worker", "Drag Race"},
+    Value = {"Office Worker"},
+    Flag = "Jobs",
+    Callback = function(options)
+        print(table.concat(options, ", "))
+    end,
+})
+
+Vehicle:Refresh({"Hando Beat", "Hando Vario"})`,
+keybind: `Farm:Keybind({
+    Title = "Toggle Farm",
+    Desc = "Start or stop the farm",
+    Value = "F",
+    Flag = "FarmKey",
+    Pressed = function()
+        AutoOffice:Set(not AutoOffice:Get())
+    end,
+})`,
+colorpicker: `Farm:Colorpicker({
+    Title = "Rank Color",
+    Default = Color3.fromRGB(0, 255, 212),
+    Flag = "RankColor",
+    Callback = function(color)
+        print(color:ToHex())
+    end,
+})`,
+paragraph: `local Status = Farm:Paragraph({
+    Title = "Status",
+    Desc = "Idle, waiting for the next job.",
+    Color = "Accent",
+    Buttons = {
+        {Title = "Refresh", Icon = "refresh-cw", Variant = "Primary", Callback = function() end},
+        {Title = "Copy Log", Icon = "copy"},
+    },
+})
+
+Status:SetDesc("Answering question 12")`,
+text: `Tele:Label("Teleport locations coming soon.")
+Tele:SubLabel("Updated every 5 seconds")
+Tele:Divider()
+Tele:Space(12)
+Tele:Code({Title = "Loader", Code = 'local DX = loadstring(game:HttpGet("..."))()'})`,
+notify: `DX:Notify({
+    Title = "Auto Farm",
+    Content = "Office Worker farm started.",
+    Type = "Success",
+    Duration = 5,
+})`,
+dialog: `Window:Dialog({
+    Title = "Reset Config",
+    Icon = "triangle-alert",
+    Content = "This will reset every option to its default value.",
+    Buttons = {
+        {Title = "Cancel", Variant = "Secondary"},
+        {Title = "Reset", Icon = "rotate-ccw", Variant = "Primary", Callback = function()
+            print("reset")
+        end},
+    },
+})`,
+element: `local Speed = Farm:Slider({Title = "Walk Speed", Value = {Min = 16, Max = 200, Default = 80}, Flag = "WalkSpeed"})
+
+Speed:SetTitle("Run Speed")
+Speed:SetDesc("Applied every frame")
+Speed:Lock()
+Speed:Unlock()
+Speed:SetVisible(false)
+
+DX.Flags.AutoOffice:Set(false)
+print(DX.Flags.WalkSpeed:Get())`,
+themes: `DX:SetTheme("Midnight")
+
+DX:AddTheme("Ocean", {
+    Accent = Color3.fromHex("#0EA5E9"),
+    Accent2 = Color3.fromHex("#2DD4BF"),
+})
+DX:SetTheme("Ocean")
+
+DX:AddTheme({
+    Name = "My Theme",
+    Accent = Color3.fromHex("#18181b"),
+    Background = Color3.fromHex("#101010"),
+    Outline = Color3.fromHex("#FFFFFF"),
+    Text = Color3.fromHex("#FFFFFF"),
+    Placeholder = Color3.fromHex("#7a7a7a"),
+    Button = Color3.fromHex("#52525b"),
+    Icon = Color3.fromHex("#a1a1aa"),
+})
+print(DX:GetCurrentTheme())
+
+print(table.concat(DX:GetThemes(), ", "))`,
+config: `local Configs = Window.ConfigManager
+local Default = Configs:CreateConfig("default")
+
+Default:Save()
+Default:Load()
+
+Configs:SetAutoLoad("default")
+Configs:LoadAutoLoad()
+
+print(table.concat(Configs:AllConfigs(), ", "))`,
+cursor: `local Window = DX:CreateWindow({
+    Title = "HUSH",
+    Cursor = true,
+})
+
+game:GetService("RunService").RenderStepped:Connect(function()
+    local reticle = game.Players.LocalPlayer.PlayerGui:FindFirstChild("HushReticle")
+    if reticle then
+        reticle.Enabled = not Window.Hovering
+    end
+end)`,
+glass: `local Window = DX:CreateWindow({
+    Title = "DX-SR Hub",
+    Glass = true,
+})
+
+Settings:Toggle({
+    Title = "Glass Effect",
+    Value = true,
+    Flag = "Glass",
+    Callback = function(state)
+        Window:SetGlass(state)
+    end,
+})`,
+mobile: `local Window = DX:CreateWindow({
+    Title = "DX-SR Hub",
+    Size = UDim2.fromOffset(700, 480),
+    Scale = DX.IsMobile and 0.75 or nil,
+})
+
+Settings:Slider({
+    Title = "UI Scale",
+    Value = {Min = 0.5, Max = 1, Default = 1},
+    Step = 0.05,
+    Callback = function(value)
+        Window:SetScale(value)
+    end,
+})
+
+Window:SetScale(nil)`,
+icons: `Main:Tab({Title = "Farming", Icon = "tractor"})
+Main:Tab({Title = "Shop", Icon = "rbxassetid://136921327637425"})
+Main:Tab({Title = "Logo", Icon = 136921327637425})
+
+local image = DX:GetIcon("house")`,
+};
+
+const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const TOKEN = /(--[^\n]*)|("(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*')|\b(\d+(?:\.\d+)?)\b|\b(local|function|end|return|if|then|else|elseif|for|in|do|while|not|and|or|nil|true|false)\b|\b(DX|Window|Enum|Color3|UDim2|Vector2|game|table|print)\b|(:\w+(?=\()|\.\w+(?=\())/g;
+function highlight(src) {
+  let out = '', last = 0;
+  src.replace(TOKEN, (m, c, s, n, k, t, meth, i) => {
+    out += esc(src.slice(last, i));
+    const cls = c ? 'c' : s ? 's' : n ? 'n' : k ? 'k' : t ? 't' : 'm';
+    out += `<span class="tk-${cls}">${esc(m)}</span>`;
+    last = i + m.length;
+    return m;
+  });
+  return out + esc(src.slice(last));
+}
+document.querySelectorAll('pre[data-code]').forEach(pre => {
+  const src = CODE[pre.dataset.code] || '';
+  pre.innerHTML = highlight(src);
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'copy';
+  btn.innerHTML = '<i data-lucide="copy"></i>Copy';
+  btn.addEventListener('click', () => {
+    const done = () => { btn.innerHTML = '<i data-lucide="check"></i>Copied'; icons(btn); setTimeout(() => { btn.innerHTML = '<i data-lucide="copy"></i>Copy'; icons(btn); }, 1400); };
+    const fallback = () => { const r = document.createRange(); r.selectNodeContents(pre); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); };
+    try { navigator.clipboard.writeText(src).then(done, fallback); } catch (e) { fallback(); }
+  });
+  pre.parentElement.appendChild(btn);
+});
+
+function icons(root) {
+  if (window.lucide) lucide.createIcons({ root: root || document });
+}
+icons();
+
+document.querySelectorAll('[data-theme-set]').forEach(b => b.addEventListener('click', () => {
+  document.documentElement.dataset.dx = b.dataset.themeSet;
+  document.querySelectorAll('[data-theme-set]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  try { localStorage.setItem('dx-theme', b.dataset.themeSet); } catch (e) {}
+}));
+try { const saved = localStorage.getItem('dx-theme'); if (saved) document.querySelector(`[data-theme-set="${saved}"]`)?.click(); } catch (e) {}
+
+function ripple(card, ev) {
+  const r = card.getBoundingClientRect();
+  const size = Math.max(r.width, r.height) * 2.2;
+  const dot = document.createElement('span');
+  dot.className = 'dx-ripple';
+  const x = (ev && ev.clientX ? ev.clientX : r.left + r.width / 2) - r.left;
+  const y = (ev && ev.clientY ? ev.clientY : r.top + r.height / 2) - r.top;
+  dot.style.cssText = `width:${size}px;height:${size}px;left:${x - size / 2}px;top:${y - size / 2}px`;
+  card.appendChild(dot);
+  setTimeout(() => dot.remove(), 600);
+}
+
+const KINDS = { Info: ['info', 'var(--dx-accent)', 'Webhook connected.'], Success: ['circle-check', 'var(--dx-ok)', 'Office Worker farm started.'], Warning: ['triangle-alert', 'var(--dx-warn)', 'Webhook URL is empty.'], Error: ['circle-x', 'var(--dx-err)', 'Remote not found, retrying.'] };
+function notify(scope, type, title, msg) {
+  const box = scope.querySelector('.dx-toasts');
+  if (!box) return;
+  const [icon, color, text] = KINDS[type] || KINDS.Info;
+  const t = document.createElement('div');
+  t.className = 'dx-toast';
+  t.style.setProperty('--k', color);
+  t.style.setProperty('--dur', '4s');
+  t.innerHTML = `<div class="dx-toast-head"><b><i data-lucide="${icon}"></i></b><span>${title || type}</span><button type="button" aria-label="Dismiss"><i data-lucide="x"></i></button></div><p>${msg || text}</p><u></u>`;
+  box.appendChild(t);
+  icons(t);
+  const close = () => { if (t.classList.contains('out')) return; t.classList.add('out'); setTimeout(() => t.remove(), 360); };
+  t.querySelector('button').addEventListener('click', close);
+  setTimeout(close, 4000);
+  while (box.children.length > 3) box.firstElementChild.remove();
+}
+
+const DIALOGS = {
+  reset: ['Reset Config', 'This will reset every option to its default value.', 'Reset', 'rotate-ccw'],
+  close: ['Close DX-SR Hub', 'Are you sure you want to close the interface? You will need to execute the script again to open it.', 'Close', 'x'],
+};
+function dialog(scope, key) {
+  const [title, body, ok, okIcon] = DIALOGS[key];
+  const o = document.createElement('div');
+  o.className = 'dx-overlay dx';
+  o.innerHTML = `<div class="dx-dialog" role="dialog" aria-modal="true" aria-label="${title}"><div class="dx-dialog-head"><b><i data-lucide="triangle-alert"></i></b>${title}</div><p>${body}</p><div class="dx-dialog-btns"><button type="button" class="dx-btn">Cancel</button><button type="button" class="dx-btn primary"><i data-lucide="${okIcon}"></i>${ok}</button></div></div>`;
+  scope.appendChild(o);
+  icons(o);
+  const close = () => { o.classList.add('out'); setTimeout(() => o.remove(), 200); };
+  o.querySelectorAll('.dx-btn').forEach(b => b.addEventListener('click', close));
+  o.addEventListener('click', e => { if (e.target === o) close(); });
+  o.querySelector('.dx-btn').focus();
+}
+
+document.addEventListener('click', e => {
+  const scope = e.target.closest('.stage, #demo-window');
+  const nbtn = e.target.closest('[data-notify]');
+  if (nbtn && scope) notify(scope, nbtn.dataset.notify, nbtn.dataset.title, nbtn.dataset.msg);
+  const dbtn = e.target.closest('[data-dialog]');
+  if (dbtn && scope) dialog(scope, dbtn.dataset.dialog);
+
+  const tog = e.target.closest('.dx-card[data-toggle]');
+  if (tog) {
+    tog.classList.toggle('on');
+    const sw = tog.querySelector('.dx-switch');
+    sw.classList.add('squash');
+    setTimeout(() => sw.classList.remove('squash'), 120);
+    ripple(tog, e);
+  }
+  const btn = e.target.closest('.dx-card[data-button]');
+  if (btn) { ripple(btn, e); btn.classList.add('pressed'); setTimeout(() => btn.classList.remove('pressed'), 150); }
+
+  const opt = e.target.closest('.dx-opt');
+  if (opt) {
+    const card = opt.closest('.dx-dd');
+    const multi = card.hasAttribute('data-multi');
+    if (multi) opt.classList.toggle('sel');
+    else { card.querySelectorAll('.dx-opt').forEach(o => o.classList.toggle('sel', o === opt)); card.classList.remove('open'); }
+    const picked = [...card.querySelectorAll('.dx-opt.sel')].map(o => o.textContent.trim());
+    card.querySelector('.dx-select span').textContent = picked.length ? picked.join(', ') : (multi ? 'None' : 'Select...');
+    return;
+  }
+  const dd = e.target.closest('.dx-dd > .dx-head');
+  if (dd) {
+    const card = dd.parentElement;
+    card.classList.toggle('open');
+    card.querySelectorAll('.dx-opt').forEach((o, i) => o.style.animationDelay = `${Math.min(i + 1, 10) * 25}ms`);
+  }
+  const cp = e.target.closest('.dx-cp > .dx-head');
+  if (cp) cp.parentElement.classList.toggle('open');
+
+  const sec = e.target.closest('.dx-sec-head');
+  if (sec) sec.parentElement.classList.toggle('closed');
+  const grp = e.target.closest('.win-group');
+  if (grp) grp.classList.toggle('closed');
+
+  const tab = e.target.closest('.win-tab');
+  if (tab) {
+    const win = tab.closest('.win');
+    ripple(tab, e);
+    win.querySelectorAll('.win-tab').forEach(t => t.classList.toggle('active', t === tab));
+    win.querySelectorAll('.win-page').forEach(p => p.classList.toggle('show', p.dataset.page === tab.dataset.tab));
+  }
+
+  const key = e.target.closest('.dx-key');
+  if (key) listen(key);
+});
+
+let listening = null;
+function listen(el) {
+  if (listening) listening.classList.remove('listening');
+  listening = el;
+  el.dataset.prev = el.textContent;
+  el.textContent = '...';
+  el.classList.add('listening');
+}
+const KEYMAP = { ShiftRight: 'RightShift', ShiftLeft: 'LeftShift', ControlLeft: 'LeftControl', ControlRight: 'RightControl', AltLeft: 'LeftAlt', AltRight: 'RightAlt', Space: 'Space', Enter: 'Return', Tab: 'Tab', CapsLock: 'CapsLock' };
+document.addEventListener('keydown', e => {
+  if (!listening) return;
+  e.preventDefault();
+  let name = KEYMAP[e.code] || (e.code.startsWith('Key') ? e.code.slice(3) : e.code.startsWith('Digit') ? ['Zero','One','Two','Three','Four','Five','Six','Seven','Eight','Nine'][+e.code.slice(5)] : e.code);
+  if (e.code === 'Escape' || e.code === 'Backspace') name = 'None';
+  listening.textContent = name;
+  listening.classList.remove('listening');
+  listening = null;
+});
+
+function decimals(step) { const m = String(step).split('.')[1]; return m ? m.length : 0; }
+function setSlider(track, value) {
+  const min = +track.dataset.min, max = +track.dataset.max, step = +(track.dataset.step || 1);
+  value = Math.min(max, Math.max(min, min + Math.round((value - min) / step) * step));
+  const d = decimals(step);
+  const a = (value - min) / (max - min) * 100;
+  track.querySelector('.dx-fill').style.width = a + '%';
+  track.querySelector('.dx-knob').style.left = a + '%';
+  track.closest('.dx-card').querySelector('.dx-num').textContent = value.toFixed(d) + (track.dataset.suffix || '');
+}
+document.querySelectorAll('.dx-track').forEach(track => {
+  setSlider(track, +track.dataset.value);
+  const move = e => {
+    const r = track.getBoundingClientRect();
+    const a = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+    setSlider(track, +track.dataset.min + a * (track.dataset.max - track.dataset.min));
+  };
+  track.addEventListener('pointerdown', e => { track.setPointerCapture(e.pointerId); track.closest('.dx-slider').classList.add('dragging'); move(e); });
+  track.addEventListener('pointermove', e => { if (track.hasPointerCapture(e.pointerId)) move(e); });
+  const up = () => track.closest('.dx-slider').classList.remove('dragging');
+  track.addEventListener('pointerup', up);
+  track.addEventListener('pointercancel', up);
+});
+
+function hsv(h, s, v) {
+  const f = n => { const k = (n + h * 6) % 6; return v - v * s * Math.max(0, Math.min(k, 4 - k, 1)); };
+  return [f(5), f(3), f(1)].map(x => Math.round(x * 255));
+}
+document.querySelectorAll('.dx-cp').forEach(card => {
+  let h = 0.47, s = 1, v = 1;
+  const sv = card.querySelector('.dx-sv'), hue = card.querySelector('.dx-hue');
+  const paint = () => {
+    const [r, g, b] = hsv(h, s, v);
+    const hex = '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('').toUpperCase();
+    sv.style.backgroundColor = `rgb(${hsv(h, 1, 1).join(',')})`;
+    sv.querySelector('i').style.cssText = `left:${s * 100}%;top:${(1 - v) * 100}%;background:${hex}`;
+    hue.querySelector('i').style.top = h * 100 + '%';
+    card.querySelector('.dx-swatch').style.background = hex;
+    card.querySelector('.dx-prev').style.background = hex;
+    card.querySelector('.dx-hex').textContent = hex;
+    card.querySelector('.dx-rgb').textContent = `RGB  ${r}, ${g}, ${b}`;
+  };
+  const drag = (el, fn) => {
+    const go = e => { const r = el.getBoundingClientRect(); fn(Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), Math.min(1, Math.max(0, (e.clientY - r.top) / r.height))); paint(); };
+    el.addEventListener('pointerdown', e => { el.setPointerCapture(e.pointerId); go(e); });
+    el.addEventListener('pointermove', e => { if (el.hasPointerCapture(e.pointerId)) go(e); });
+  };
+  drag(sv, (x, y) => { s = x; v = 1 - y; });
+  drag(hue, (x, y) => { h = Math.min(y, 0.999); });
+  paint();
+});
+
+const winSearch = document.getElementById('win-search');
+winSearch.addEventListener('input', () => {
+  const q = winSearch.value.toLowerCase();
+  document.querySelectorAll('#demo-window .win-tab').forEach(t => {
+    const page = document.querySelector(`#demo-window .win-page[data-page="${t.dataset.tab}"]`);
+    t.hidden = q && !(t.textContent.toLowerCase().includes(q) || page.textContent.toLowerCase().includes(q));
+  });
+  document.querySelectorAll('#demo-window .win-group').forEach(g => g.classList.toggle('closed', false));
+});
+
+const STATUS = ['Answering question 12', 'Walking to printer', 'Printing document 4', 'Waiting for next question'];
+let si = 0;
+document.getElementById('para-refresh').addEventListener('click', () => {
+  si = (si + 1) % STATUS.length;
+  document.getElementById('para-desc').textContent = STATUS[si];
+});
+
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const side = document.querySelector('.side');
+const links = [...side.querySelectorAll('a')];
+const sections = [...document.querySelectorAll('section.doc')];
+let spyLock = 0;
+function setActive(id) {
+  let active;
+  links.forEach(a => { const on = a.getAttribute('href') === '#' + id; a.classList.toggle('active', on); if (on) active = a; });
+  if (!active) return;
+  if (side.scrollWidth > side.clientWidth + 2) side.scrollTo({ left: active.offsetLeft - 16, behavior: reduce ? 'auto' : 'smooth' });
+  else if (active.offsetTop < side.scrollTop || active.offsetTop + active.offsetHeight > side.scrollTop + side.clientHeight) side.scrollTo({ top: active.offsetTop - side.clientHeight / 2 });
+}
+links.forEach(a => a.addEventListener('click', e => {
+  const id = a.getAttribute('href').slice(1);
+  const target = document.getElementById(id);
+  if (!target) return;
+  e.preventDefault();
+  setActive(id);
+  spyLock = Date.now() + 1000;
+  target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+}));
+function spy() {
+  if (Date.now() < spyLock) return;
+  let current = sections[0].id;
+  for (const sec of sections) if (sec.getBoundingClientRect().top <= 96) current = sec.id;
+  if (innerHeight + scrollY >= document.documentElement.scrollHeight - 4) current = sections[sections.length - 1].id;
+  setActive(current);
+}
+addEventListener('scroll', spy, { passive: true });
+addEventListener('scrollend', () => { spyLock = 0; spy(); });
+spy();
+
+const glassBtn = document.querySelector('[data-glass-set]');
+function setGlass(on) {
+  document.documentElement.toggleAttribute('data-glass', on);
+  glassBtn.setAttribute('aria-pressed', String(on));
+  document.querySelectorAll('[data-glass-toggle]').forEach(c => c.classList.toggle('on', on));
+  try { localStorage.setItem('dx-glass', on ? '1' : '0'); } catch (e) {}
+}
+glassBtn.addEventListener('click', () => setGlass(!document.documentElement.hasAttribute('data-glass')));
+document.addEventListener('click', e => {
+  const card = e.target.closest('[data-glass-toggle]');
+  if (!card) return;
+  setGlass(!document.documentElement.hasAttribute('data-glass'));
+  ripple(card, e);
+});
+try { if (localStorage.getItem('dx-glass') === '1') setGlass(true); } catch (e) {}
+
+if (matchMedia('(hover: hover) and (pointer: fine)').matches && !reduce) {
+  const scene = document.getElementById('scene'), tilt = document.getElementById('tilt');
+  let held = false;
+  scene.addEventListener('pointerdown', () => held = true);
+  addEventListener('pointerup', () => held = false);
+  scene.addEventListener('pointermove', e => {
+    if (held) return;
+    const r = scene.getBoundingClientRect();
+    tilt.style.setProperty('--ry', ((e.clientX - r.left) / r.width - 0.5) * 16 + 'deg');
+    tilt.style.setProperty('--rx', -((e.clientY - r.top) / r.height - 0.5) * 12 + 'deg');
+  });
+  scene.addEventListener('pointerleave', () => { tilt.style.removeProperty('--ry'); tilt.style.removeProperty('--rx'); });
+  document.querySelectorAll('.stage').forEach(stage => {
+    const pane = stage.querySelector('.dx-pane');
+    if (!pane) return;
+    let down = false;
+    stage.addEventListener('pointerdown', () => down = true);
+    addEventListener('pointerup', () => down = false);
+    stage.addEventListener('pointermove', e => {
+      if (down) return;
+      const r = stage.getBoundingClientRect();
+      pane.style.setProperty('--ry', ((e.clientX - r.left) / r.width - 0.5) * 6 + 'deg');
+      pane.style.setProperty('--rx', -((e.clientY - r.top) / r.height - 0.5) * 6 + 'deg');
+    });
+    stage.addEventListener('pointerleave', () => { pane.style.removeProperty('--ry'); pane.style.removeProperty('--rx'); });
+  });
+}
+</script>
