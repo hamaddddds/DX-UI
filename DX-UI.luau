@@ -1,5 +1,5 @@
 local DX = {
-    Version = "0.0.0.4",
+    Version = "0.0.0.5",
     Flags = {},
     Themes = {},
     Theme = "DX-SR",
@@ -547,7 +547,8 @@ function DX:Popup(config)
     return CreateDialog(gui, config, function() gui:Destroy() end)
 end
 
-local NotifyHolder
+local NotifyGui
+local NotifyHolders = {}
 local NotifyTypes = {
     Info = {"info", "Accent"},
     Success = {"circle-check", "Success"},
@@ -555,48 +556,101 @@ local NotifyTypes = {
     Error = {"circle-x", "Error"},
 }
 
-local function GetNotifyHolder()
-    if NotifyHolder and NotifyHolder.Parent then return NotifyHolder end
-    local gui = ScreenGui("DX-UI-Notifications", 1200)
-    NotifyHolder = New("Frame", {Name = "Notifications", 
-        AnchorPoint = Vector2.new(1, 1),
-        Position = UDim2.new(1, -18, 1, -18),
-        Size = UDim2.new(0, 320, 1, -36),
+local function NotifyScale()
+    local camera = workspace.CurrentCamera
+    local size = camera and camera.ViewportSize or Vector2.new(1280, 720)
+    return math.clamp(math.min(size.X / 900, size.Y / 540), 0.75, 1)
+end
+
+local function FitNotifyScale()
+    for _, holder in pairs(NotifyHolders) do
+        local scale = holder:FindFirstChildOfClass("UIScale")
+        if scale then scale.Scale = NotifyScale() end
+    end
+end
+
+local function GetNotifyHolder(top)
+    local key = top and "Top" or "Corner"
+    local holder = NotifyHolders[key]
+    if holder and holder.Parent then return holder end
+    if not (NotifyGui and NotifyGui.Parent) then
+        NotifyGui = ScreenGui("DX-UI-Notifications", 1200)
+        workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(FitNotifyScale)
+    end
+    holder = New("Frame", {Name = top and "TopNotifications" or "Notifications",
+        AnchorPoint = top and Vector2.new(0.5, 0) or Vector2.new(1, 1),
+        Position = top and UDim2.new(0.5, 0, 0, 14) or UDim2.new(1, -18, 1, -18),
+        Size = UDim2.new(0, top and 340 or 320, 1, -36),
         BackgroundTransparency = 1,
-        Parent = gui,
-    }, {List(10, nil, Enum.HorizontalAlignment.Right, Enum.VerticalAlignment.Bottom)})
-    return NotifyHolder
+        Parent = NotifyGui,
+    }, {
+        List(10, nil, top and Enum.HorizontalAlignment.Center or Enum.HorizontalAlignment.Right, top and Enum.VerticalAlignment.Top or Enum.VerticalAlignment.Bottom),
+        New("UIScale", {Scale = NotifyScale()}),
+    })
+    NotifyHolders[key] = holder
+    return holder
 end
 
 function DX:Notify(config)
     config = config or {}
     local Notification = {}
-    local holder = GetNotifyHolder()
+    local top = config.Placement == "Top"
+    local holder = GetNotifyHolder(top)
+    local hidden = top and UDim2.fromOffset(0, -180) or UDim2.fromOffset(360, 0)
     local kind = NotifyTypes[config.Type or "Info"] or NotifyTypes.Info
     local accent = kind[2]
+    local tint = typeof(config.Color) == "Color3" and config.Color or nil
+    local image = config.Image and DX:GetIcon(config.Image)
     local duration = config.Duration or config.Lifetime or 5
-    local wrap = New("Frame", {Name = "Notification", Size = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1, LayoutOrder = NextOrder(), Parent = holder})
-    local card = New("Frame", {Name = "Card", 
+    local boxSize = image and 46 or 32
+    local function Paint(properties, property)
+        properties.Theme = properties.Theme or {}
+        if tint then
+            properties[property] = tint
+        else
+            properties.Theme[property] = accent
+        end
+        return properties
+    end
+    local wrap = New("Frame", {Name = "Notification", Size = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1, LayoutOrder = top and -NextOrder() or NextOrder(), Parent = holder})
+    local card = New("Frame", {Name = "Card",
         Size = UDim2.new(1, 0, 0, 0),
         AutomaticSize = AutoY,
-        Position = UDim2.fromOffset(360, 0),
+        Position = hidden,
         Theme = {BackgroundColor3 = "Background"},
         Parent = wrap,
-    }, {Corner(12), Stroke("Stroke"), Padding(14, 14, 12, 12), List(8)})
-    local head = New("Frame", {Size = UDim2.new(1, 0, 0, 32), BackgroundTransparency = 1, LayoutOrder = 1, Parent = card})
-    local box = New("Frame", {Size = UDim2.fromOffset(32, 32), Theme = {BackgroundColor3 = accent}, BackgroundTransparency = 0.85, Parent = head}, {Corner(8)})
-    Icon(config.Icon or kind[1], 17, accent, {AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Parent = box})
-    local title = Text({Text = config.Title or "DX-SR Hub", TextSize = 15, FontFace = GetFont(Weight.SemiBold), Position = UDim2.fromOffset(44, 0), Size = UDim2.new(1, -72, 1, 0), TextTruncate = Enum.TextTruncate.AtEnd, Parent = head})
+    }, {Corner(12), Padding(14, 14, 12, 12), List(8)})
+    New("UIStroke", Paint({Transparency = 0.55, Thickness = 1, ApplyStrokeMode = Enum.ApplyStrokeMode.Border, Parent = card}, "Color"))
+    local head = New("Frame", {Size = UDim2.new(1, 0, 0, boxSize), BackgroundTransparency = 1, LayoutOrder = 1, Parent = card})
+    local box = New("Frame", Paint({Size = UDim2.fromOffset(boxSize, boxSize), BackgroundTransparency = image and 0.8 or 0.85, Parent = head}, "BackgroundColor3"), {Corner(image and 10 or 8)})
+    if image then
+        New("UIStroke", Paint({Transparency = 0.4, Thickness = 1, ApplyStrokeMode = Enum.ApplyStrokeMode.Border, Parent = box}, "Color"))
+        New("ImageLabel", {AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.new(1, -8, 1, -8), BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Fit, Image = image, Parent = box})
+    else
+        local icon = Icon(config.Icon or kind[1], 17, accent, {AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Parent = box})
+        if icon and tint then
+            ThemeMap(icon).ImageColor3 = nil
+            icon.ImageColor3 = tint
+        end
+    end
+    local left = boxSize + 12
+    local title = Text({Text = config.Title or "DX-SR Hub", TextSize = 15, FontFace = GetFont(Weight.SemiBold), Position = UDim2.fromOffset(left, 0), Size = UDim2.new(1, -(left + 70), config.SubTitle and 0.55 or 1, 0), TextTruncate = Enum.TextTruncate.AtEnd, Parent = head})
+    local subtitle
+    if config.SubTitle then
+        subtitle = Text(Paint({Text = config.SubTitle, TextSize = 12, FontFace = GetFont(Weight.SemiBold), Position = UDim2.new(0, left, 0.55, 0), Size = UDim2.new(1, -(left + 70), 0.45, 0), TextTruncate = Enum.TextTruncate.AtEnd, RichText = true, Parent = head}, "TextColor3"))
+    end
     local close = New("ImageButton", {AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, 0, 0.5, 0), Size = UDim2.fromOffset(20, 20), BackgroundTransparency = 1, Image = DX:GetIcon("x") or "", Theme = {ImageColor3 = "SubText"}, Parent = head})
+    local pill = New("Frame", {AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -26, 0.5, 0), Size = UDim2.fromOffset(0, 20), AutomaticSize = AutoX, Theme = {BackgroundColor3 = "Field"}, Parent = head}, {Corner(Round), Padding(8, 8, 0, 0)})
+    local timer = Text({Text = math.ceil(duration) .. "s", TextSize = 12, FontFace = GetFont(Weight.SemiBold), Theme = {TextColor3 = "SubText"}, Size = UDim2.fromScale(0, 1), AutomaticSize = AutoX, Parent = pill})
     local content = Text({Text = config.Content or config.Description or "", TextSize = 13, Theme = {TextColor3 = "SubText"}, Size = UDim2.new(1, 0, 0, 0), AutomaticSize = AutoY, TextWrapped = true, RichText = true, LayoutOrder = 2, Parent = card})
     content.Visible = content.Text ~= ""
     local track = New("Frame", {Size = UDim2.new(1, 0, 0, 3), Theme = {BackgroundColor3 = "Field"}, LayoutOrder = 3, Parent = card}, {Corner(Round)})
-    local fill = New("Frame", {Size = UDim2.fromScale(1, 1), Theme = {BackgroundColor3 = accent}, Parent = track}, {Corner(Round)})
+    local fill = New("Frame", Paint({Size = UDim2.fromScale(1, 1), Parent = track}, "BackgroundColor3"), {Corner(Round)})
     local closed = false
     function Notification:Close()
         if closed then return end
         closed = true
-        Tween(card, 0.35, {Position = UDim2.fromOffset(360, 0)}, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
+        Tween(card, 0.35, {Position = hidden}, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
         task.delay(0.3, function()
             Tween(wrap, 0.25, {Size = UDim2.new(1, 0, 0, 0)})
             task.delay(0.26, function() wrap:Destroy() end)
@@ -604,16 +658,23 @@ function DX:Notify(config)
     end
     Notification.Cancel = Notification.Close
     function Notification:SetTitle(value) title.Text = value end
+    function Notification:SetSubTitle(value) if subtitle then subtitle.Text = value end end
     function Notification:SetContent(value) content.Text = value content.Visible = value ~= "" end
     Notification.UpdateTitle = Notification.SetTitle
     Notification.UpdateDescription = Notification.SetContent
     close.MouseButton1Click:Connect(function() Notification:Close() end)
     task.defer(function()
         task.wait()
-        Tween(wrap, 0.3, {Size = UDim2.new(1, 0, 0, card.AbsoluteSize.Y)})
+        local scale = holder:FindFirstChildOfClass("UIScale")
+        Tween(wrap, 0.3, {Size = UDim2.new(1, 0, 0, card.AbsoluteSize.Y / (scale and scale.Scale or 1))})
         Tween(card, 0.55, {Position = UDim2.fromOffset(0, 0)}, Enum.EasingStyle.Back)
         Tween(fill, duration, {Size = UDim2.fromScale(0, 1)}, Enum.EasingStyle.Linear)
-        task.delay(duration, function() Notification:Close() end)
+        local endsAt = os.clock() + duration
+        while not closed and os.clock() < endsAt do
+            timer.Text = math.ceil(endsAt - os.clock()) .. "s"
+            task.wait(0.2)
+        end
+        Notification:Close()
     end)
     return Notification
 end

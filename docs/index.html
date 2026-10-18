@@ -310,7 +310,7 @@ td { color: var(--muted); }
 <header class="topnav">
   <div class="brand">
     <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#3B82F6"/></linearGradient></defs><path d="M4 6h8.5c6 0 10 4 10 10s-4 10-10 10H4z" fill="none" stroke="url(#g)" stroke-width="3" stroke-linejoin="round"/><path d="M17 6l11 20M28 6L17 26" stroke="url(#g)" stroke-width="3" stroke-linecap="round"/></svg>
-    DX-UI <small>v0.0.0.4</small>
+    DX-UI <small>v0.0.0.5</small>
   </div>
   <div class="themes" role="group" aria-label="Preview theme">
     <button type="button" data-theme-set="DX-SR" aria-pressed="true"><i style="background:linear-gradient(90deg,#3B82F6,#22D3EE)"></i>DX-SR</button>
@@ -368,7 +368,7 @@ td { color: var(--muted); }
             <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><path d="M4 6h8.5c6 0 10 4 10 10s-4 10-10 10H4z" fill="none" stroke="var(--dx-accent2)" stroke-width="3" stroke-linejoin="round"/><path d="M17 6l11 20M28 6L17 26" stroke="var(--dx-accent)" stroke-width="3" stroke-linecap="round"/></svg>
             <div class="win-title"><b>DX-SR Hub</b><span>Professional Hub</span></div>
             <div class="dx-tags">
-              <span class="dx-tag" style="--c:#30FF6A"><i data-lucide="github"></i>v0.0.0.4</span>
+              <span class="dx-tag" style="--c:#30FF6A"><i data-lucide="github"></i>v0.0.0.5</span>
               <span class="dx-tag" style="--c:#FBBF24"><i data-lucide="crown"></i>Premium</span>
             </div>
             <div class="win-ctrl">
@@ -465,7 +465,7 @@ td { color: var(--muted); }
     <section class="doc" id="tag">
       <h2><i data-lucide="tag"></i>Tag</h2>
       <p>Small colored badges next to the window title, for a version number or a plan name. They pop in when created.</p>
-      <div class="stage"><span class="stage-label">Preview</span><div class="dx dx-tags" id="tag-demo"><span class="dx-tag" style="--c:#30FF6A"><i data-lucide="github"></i>v0.0.0.4</span><span class="dx-tag" style="--c:#FBBF24"><i data-lucide="crown"></i>Premium</span><span class="dx-tag" style="--c:#22D3EE"><i data-lucide="sparkles"></i>Beta</span></div></div>
+      <div class="stage"><span class="stage-label">Preview</span><div class="dx dx-tags" id="tag-demo"><span class="dx-tag" style="--c:#30FF6A"><i data-lucide="github"></i>v0.0.0.5</span><span class="dx-tag" style="--c:#FBBF24"><i data-lucide="crown"></i>Premium</span><span class="dx-tag" style="--c:#22D3EE"><i data-lucide="sparkles"></i>Beta</span></div></div>
       <div class="codebox"><pre data-code="tag"></pre></div>
       <div class="methods"><code>:SetTitle(text)</code><code>:SetColor(Color3)</code><code>:Destroy()</code></div>
     </section>
@@ -708,7 +708,7 @@ td { color: var(--muted); }
 
     <section class="doc" id="notify">
       <h2><i data-lucide="bell"></i>Notify</h2>
-      <p>Toasts slide in from the bottom right with a countdown bar. They stack, and the close button dismisses them early.</p>
+      <p>Toasts slide in from the bottom right, or drop down from the top center with <code>Placement = "Top"</code>. Each one shows a seconds countdown and a countdown bar, stacks with the others, and the close button dismisses it early. Toasts scale down on small screens (75% minimum) so they fit on mobile.</p>
       <div class="stage" style="min-height:260px;align-items:flex-start"><span class="stage-label">Preview · click a type</span>
         <div class="dx" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
           <button type="button" class="dx-btn" data-notify="Info"><i data-lucide="info"></i>Info</button>
@@ -726,10 +726,14 @@ td { color: var(--muted); }
           <tr><td>Content</td><td>string</td><td>Body text. Rich text works.</td></tr>
           <tr><td>Type</td><td>string</td><td>Info, Success, Warning or Error. Sets the icon and color.</td></tr>
           <tr><td>Icon</td><td>string</td><td>Replaces the type icon.</td></tr>
+          <tr><td>Image</td><td>string | number</td><td>Large thumbnail (asset id or Lucide name) in place of the icon, for example a fish picture.</td></tr>
+          <tr><td>Color</td><td>Color3</td><td>Custom accent for the stroke, icon box, subtitle and bar, for example a rarity color.</td></tr>
+          <tr><td>SubTitle</td><td>string</td><td>Small colored line under the title. Rich text works.</td></tr>
+          <tr><td>Placement</td><td>string</td><td>"Top" drops the toast from the top center. Default is the bottom right.</td></tr>
           <tr><td>Duration</td><td>number</td><td>Seconds on screen. Default 5.</td></tr>
         </tbody>
       </table></div>
-      <div class="methods"><code>:Close()</code><code>:SetTitle(text)</code><code>:SetContent(text)</code></div>
+      <div class="methods"><code>:Close()</code><code>:SetTitle(text)</code><code>:SetSubTitle(text)</code><code>:SetContent(text)</code></div>
     </section>
 
     <section class="doc" id="dialog">
@@ -807,7 +811,7 @@ window: `local Window = DX:CreateWindow({
     ToggleKey = Enum.KeyCode.RightShift,
     Theme = "DX-SR",
 })`,
-tag: `Window:Tag({Title = "v0.0.0.4", Icon = "github", Color = Color3.fromHex("#30FF6A")})
+tag: `Window:Tag({Title = "v0.0.0.5", Icon = "github", Color = Color3.fromHex("#30FF6A")})
 Window:Tag({Title = "Premium", Icon = "crown", Color = Color3.fromHex("#FBBF24")})`,
 tabs: `local Main = Window:Section({Title = "Main", Icon = "house", Opened = true})
 local Farm = Main:Tab({Title = "Farming", Icon = "tractor", Desc = "Automate every job with one click."})
@@ -947,6 +951,15 @@ notify: `DX:Notify({
     Content = "Office Worker farm started.",
     Type = "Success",
     Duration = 5,
+})
+
+DX:Notify({
+    Title = "Sockeye Salmon",
+    SubTitle = "Common",
+    Content = "At <b>3.6</b>kg  ·  (<b>1/9</b>)",
+    Image = "rbxassetid://75669332719913",
+    Color = Color3.fromHex("#8EBBBF"),
+    Placement = "Top",
 })`,
 dialog: `Window:Dialog({
     Title = "Reset Config",
