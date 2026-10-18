@@ -1,5 +1,5 @@
 local DX = {
-    Version = "0.0.0.5",
+    Version = "0.0.0.6",
     Flags = {},
     Themes = {},
     Theme = "DX-SR",
@@ -613,39 +613,56 @@ function DX:Notify(config)
         return properties
     end
     local wrap = New("Frame", {Name = "Notification", Size = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1, LayoutOrder = top and -NextOrder() or NextOrder(), Parent = holder})
+    local media = image and config.Layout == "Media"
     local card = New("Frame", {Name = "Card",
-        Size = UDim2.new(1, 0, 0, 0),
-        AutomaticSize = AutoY,
+        Size = UDim2.new(1, 0, 0, media and 88 or 0),
+        AutomaticSize = media and Enum.AutomaticSize.None or AutoY,
         Position = hidden,
         Theme = {BackgroundColor3 = "Background"},
         Parent = wrap,
-    }, {Corner(12), Padding(14, 14, 12, 12), List(8)})
+    }, media and {Corner(12)} or {Corner(12), Padding(14, 14, 12, 12), List(8)})
     New("UIStroke", Paint({Transparency = 0.55, Thickness = 1, ApplyStrokeMode = Enum.ApplyStrokeMode.Border, Parent = card}, "Color"))
-    local head = New("Frame", {Size = UDim2.new(1, 0, 0, boxSize), BackgroundTransparency = 1, LayoutOrder = 1, Parent = card})
-    local box = New("Frame", Paint({Size = UDim2.fromOffset(boxSize, boxSize), BackgroundTransparency = image and 0.8 or 0.85, Parent = head}, "BackgroundColor3"), {Corner(image and 10 or 8)})
-    if image then
-        New("UIStroke", Paint({Transparency = 0.4, Thickness = 1, ApplyStrokeMode = Enum.ApplyStrokeMode.Border, Parent = box}, "Color"))
-        New("ImageLabel", {AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.new(1, -8, 1, -8), BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Fit, Image = image, Parent = box})
+    local title, subtitle, content, close, timer, fill
+    if media then
+        New("Frame", Paint({Name = "Glow", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 0.86, Parent = card}, "BackgroundColor3"), {Corner(12), New("UIGradient", {Transparency = NumberSequence.new(0, 1)})})
+        local box = New("Frame", Paint({Name = "Media", Position = UDim2.fromOffset(10, 10), Size = UDim2.fromOffset(68, 68), BackgroundTransparency = 0.72, Parent = card}, "BackgroundColor3"), {Corner(10), New("UIGradient", {Rotation = 90, Transparency = NumberSequence.new(0, 0.55)})})
+        New("UIStroke", Paint({Transparency = 0.3, Thickness = 1, ApplyStrokeMode = Enum.ApplyStrokeMode.Border, Parent = box}, "Color"))
+        New("ImageLabel", {AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.new(1, -10, 1, -10), BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Fit, Image = image, Parent = box})
+        title = Text({Text = config.Title or "DX-SR Hub", TextSize = 15, FontFace = GetFont(Weight.SemiBold), Position = UDim2.fromOffset(90, 12), Size = UDim2.new(1, -164, 0, 18), TextTruncate = Enum.TextTruncate.AtEnd, RichText = true, Parent = card})
+        close = New("ImageButton", {AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -10, 0, 21), Size = UDim2.fromOffset(18, 18), BackgroundTransparency = 1, Image = DX:GetIcon("x") or "", Theme = {ImageColor3 = "SubText"}, Parent = card})
+        local pill = New("Frame", {AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -34, 0, 21), Size = UDim2.fromOffset(0, 18), AutomaticSize = AutoX, Theme = {BackgroundColor3 = "Field"}, Parent = card}, {Corner(Round), Padding(7, 7, 0, 0)})
+        timer = Text({Text = math.ceil(duration) .. "s", TextSize = 11, FontFace = GetFont(Weight.SemiBold), Theme = {TextColor3 = "SubText"}, Size = UDim2.fromScale(0, 1), AutomaticSize = AutoX, Parent = pill})
+        local chip = New("Frame", Paint({Position = UDim2.fromOffset(90, 34), Size = UDim2.fromOffset(0, 18), AutomaticSize = AutoX, BackgroundTransparency = 0.82, Visible = config.SubTitle ~= nil, Parent = card}, "BackgroundColor3"), {Corner(Round), Padding(8, 8, 0, 0)})
+        subtitle = Text(Paint({Text = config.SubTitle or "", TextSize = 11, FontFace = GetFont(Weight.Bold), Size = UDim2.fromScale(0, 1), AutomaticSize = AutoX, RichText = true, Parent = chip}, "TextColor3"))
+        content = Text({Text = config.Content or config.Description or "", TextSize = 13, Theme = {TextColor3 = "SubText"}, Position = UDim2.fromOffset(90, 56), Size = UDim2.new(1, -100, 0, 16), TextTruncate = Enum.TextTruncate.AtEnd, RichText = true, Parent = card})
+        local track = New("Frame", {AnchorPoint = Vector2.new(0, 1), Position = UDim2.new(0, 90, 1, -10), Size = UDim2.new(1, -100, 0, 3), Theme = {BackgroundColor3 = "Field"}, Parent = card}, {Corner(Round)})
+        fill = New("Frame", Paint({Size = UDim2.fromScale(1, 1), Parent = track}, "BackgroundColor3"), {Corner(Round)})
     else
-        local icon = Icon(config.Icon or kind[1], 17, accent, {AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Parent = box})
-        if icon and tint then
-            ThemeMap(icon).ImageColor3 = nil
-            icon.ImageColor3 = tint
+        local head = New("Frame", {Size = UDim2.new(1, 0, 0, boxSize), BackgroundTransparency = 1, LayoutOrder = 1, Parent = card})
+        local box = New("Frame", Paint({Size = UDim2.fromOffset(boxSize, boxSize), BackgroundTransparency = image and 0.8 or 0.85, Parent = head}, "BackgroundColor3"), {Corner(image and 10 or 8)})
+        if image then
+            New("UIStroke", Paint({Transparency = 0.4, Thickness = 1, ApplyStrokeMode = Enum.ApplyStrokeMode.Border, Parent = box}, "Color"))
+            New("ImageLabel", {AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.new(1, -8, 1, -8), BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Fit, Image = image, Parent = box})
+        else
+            local icon = Icon(config.Icon or kind[1], 17, accent, {AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Parent = box})
+            if icon and tint then
+                ThemeMap(icon).ImageColor3 = nil
+                icon.ImageColor3 = tint
+            end
         end
+        local left = boxSize + 12
+        title = Text({Text = config.Title or "DX-SR Hub", TextSize = 15, FontFace = GetFont(Weight.SemiBold), Position = UDim2.fromOffset(left, 0), Size = UDim2.new(1, -(left + 70), config.SubTitle and 0.55 or 1, 0), TextTruncate = Enum.TextTruncate.AtEnd, Parent = head})
+        if config.SubTitle then
+            subtitle = Text(Paint({Text = config.SubTitle, TextSize = 12, FontFace = GetFont(Weight.SemiBold), Position = UDim2.new(0, left, 0.55, 0), Size = UDim2.new(1, -(left + 70), 0.45, 0), TextTruncate = Enum.TextTruncate.AtEnd, RichText = true, Parent = head}, "TextColor3"))
+        end
+        close = New("ImageButton", {AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, 0, 0.5, 0), Size = UDim2.fromOffset(20, 20), BackgroundTransparency = 1, Image = DX:GetIcon("x") or "", Theme = {ImageColor3 = "SubText"}, Parent = head})
+        local pill = New("Frame", {AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -26, 0.5, 0), Size = UDim2.fromOffset(0, 20), AutomaticSize = AutoX, Theme = {BackgroundColor3 = "Field"}, Parent = head}, {Corner(Round), Padding(8, 8, 0, 0)})
+        timer = Text({Text = math.ceil(duration) .. "s", TextSize = 12, FontFace = GetFont(Weight.SemiBold), Theme = {TextColor3 = "SubText"}, Size = UDim2.fromScale(0, 1), AutomaticSize = AutoX, Parent = pill})
+        content = Text({Text = config.Content or config.Description or "", TextSize = 13, Theme = {TextColor3 = "SubText"}, Size = UDim2.new(1, 0, 0, 0), AutomaticSize = AutoY, TextWrapped = true, RichText = true, LayoutOrder = 2, Parent = card})
+        content.Visible = content.Text ~= ""
+        local track = New("Frame", {Size = UDim2.new(1, 0, 0, 3), Theme = {BackgroundColor3 = "Field"}, LayoutOrder = 3, Parent = card}, {Corner(Round)})
+        fill = New("Frame", Paint({Size = UDim2.fromScale(1, 1), Parent = track}, "BackgroundColor3"), {Corner(Round)})
     end
-    local left = boxSize + 12
-    local title = Text({Text = config.Title or "DX-SR Hub", TextSize = 15, FontFace = GetFont(Weight.SemiBold), Position = UDim2.fromOffset(left, 0), Size = UDim2.new(1, -(left + 70), config.SubTitle and 0.55 or 1, 0), TextTruncate = Enum.TextTruncate.AtEnd, Parent = head})
-    local subtitle
-    if config.SubTitle then
-        subtitle = Text(Paint({Text = config.SubTitle, TextSize = 12, FontFace = GetFont(Weight.SemiBold), Position = UDim2.new(0, left, 0.55, 0), Size = UDim2.new(1, -(left + 70), 0.45, 0), TextTruncate = Enum.TextTruncate.AtEnd, RichText = true, Parent = head}, "TextColor3"))
-    end
-    local close = New("ImageButton", {AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, 0, 0.5, 0), Size = UDim2.fromOffset(20, 20), BackgroundTransparency = 1, Image = DX:GetIcon("x") or "", Theme = {ImageColor3 = "SubText"}, Parent = head})
-    local pill = New("Frame", {AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -26, 0.5, 0), Size = UDim2.fromOffset(0, 20), AutomaticSize = AutoX, Theme = {BackgroundColor3 = "Field"}, Parent = head}, {Corner(Round), Padding(8, 8, 0, 0)})
-    local timer = Text({Text = math.ceil(duration) .. "s", TextSize = 12, FontFace = GetFont(Weight.SemiBold), Theme = {TextColor3 = "SubText"}, Size = UDim2.fromScale(0, 1), AutomaticSize = AutoX, Parent = pill})
-    local content = Text({Text = config.Content or config.Description or "", TextSize = 13, Theme = {TextColor3 = "SubText"}, Size = UDim2.new(1, 0, 0, 0), AutomaticSize = AutoY, TextWrapped = true, RichText = true, LayoutOrder = 2, Parent = card})
-    content.Visible = content.Text ~= ""
-    local track = New("Frame", {Size = UDim2.new(1, 0, 0, 3), Theme = {BackgroundColor3 = "Field"}, LayoutOrder = 3, Parent = card}, {Corner(Round)})
-    local fill = New("Frame", Paint({Size = UDim2.fromScale(1, 1), Parent = track}, "BackgroundColor3"), {Corner(Round)})
     local closed = false
     function Notification:Close()
         if closed then return end
