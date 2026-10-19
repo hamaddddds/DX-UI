@@ -1,5 +1,5 @@
 local DX = {
-    Version = "0.0.0.6",
+    Version = "0.0.0.7",
     Flags = {},
     Themes = {},
     Theme = "DX-SR",
@@ -762,13 +762,22 @@ local function BaseElement(owner, config, options)
         desc.Text = value or ""
         desc.Visible = value ~= nil and value ~= ""
     end
-    function Element:Lock()
+    function Element:Lock(reason)
         if lockOverlay then return end
         Element.Locked = true
         lockOverlay = New("TextButton", {Name = "Lock", Text = "", AutoButtonColor = false, Size = UDim2.fromScale(1, 1), Theme = {BackgroundColor3 = "Background"}, BackgroundTransparency = 1, ZIndex = 40, Parent = card}, {Corner(10)})
-        local lockIcon = Icon("lock", 16, "SubText", {AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -14, 0.5, 0), ImageTransparency = 1, ZIndex = 41, Parent = lockOverlay})
-        Tween(lockOverlay, 0.25, {BackgroundTransparency = 0.4})
-        if lockIcon then Tween(lockIcon, 0.25, {ImageTransparency = 0}) end
+        if reason and reason ~= "" then
+            local row = New("Frame", {Name = "Reason", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.new(1, -28, 0, 0), AutomaticSize = AutoY, BackgroundTransparency = 1, ZIndex = 41, Parent = lockOverlay}, {List(6, Enum.FillDirection.Horizontal, Enum.HorizontalAlignment.Center, Enum.VerticalAlignment.Center)})
+            Icon("lock", 14, "Text", {ImageTransparency = 1, ZIndex = 41, LayoutOrder = 1, Parent = row})
+            Text({Text = reason, TextSize = 13, FontFace = GetFont(Weight.SemiBold), Size = UDim2.new(), AutomaticSize = Enum.AutomaticSize.XY, TextTransparency = 1, ZIndex = 41, LayoutOrder = 2, Parent = row})
+        else
+            Icon("lock", 16, "SubText", {AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -14, 0.5, 0), ImageTransparency = 1, ZIndex = 41, Parent = lockOverlay})
+        end
+        Tween(lockOverlay, 0.25, {BackgroundTransparency = reason and 0.12 or 0.4})
+        for _, child in ipairs(lockOverlay:GetDescendants()) do
+            if child:IsA("ImageLabel") then Tween(child, 0.25, {ImageTransparency = 0}) end
+            if child:IsA("TextLabel") then Tween(child, 0.25, {TextTransparency = 0}) end
+        end
     end
     function Element:Unlock()
         if not lockOverlay then return end
@@ -776,8 +785,9 @@ local function BaseElement(owner, config, options)
         local overlay = lockOverlay
         lockOverlay = nil
         Tween(overlay, 0.2, {BackgroundTransparency = 1})
-        for _, child in ipairs(overlay:GetChildren()) do
+        for _, child in ipairs(overlay:GetDescendants()) do
             if child:IsA("ImageLabel") then Tween(child, 0.2, {ImageTransparency = 1}) end
+            if child:IsA("TextLabel") then Tween(child, 0.2, {TextTransparency = 1}) end
         end
         task.delay(0.21, function() overlay:Destroy() end)
     end

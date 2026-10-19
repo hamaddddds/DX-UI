@@ -310,7 +310,7 @@ td { color: var(--muted); }
 <header class="topnav">
   <div class="brand">
     <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#3B82F6"/></linearGradient></defs><path d="M4 6h8.5c6 0 10 4 10 10s-4 10-10 10H4z" fill="none" stroke="url(#g)" stroke-width="3" stroke-linejoin="round"/><path d="M17 6l11 20M28 6L17 26" stroke="url(#g)" stroke-width="3" stroke-linecap="round"/></svg>
-    DX-UI <small>v0.0.0.6</small>
+    DX-UI <small>v0.0.0.7</small>
   </div>
   <div class="themes" role="group" aria-label="Preview theme">
     <button type="button" data-theme-set="DX-SR" aria-pressed="true"><i style="background:linear-gradient(90deg,#3B82F6,#22D3EE)"></i>DX-SR</button>
@@ -368,7 +368,7 @@ td { color: var(--muted); }
             <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><path d="M4 6h8.5c6 0 10 4 10 10s-4 10-10 10H4z" fill="none" stroke="var(--dx-accent2)" stroke-width="3" stroke-linejoin="round"/><path d="M17 6l11 20M28 6L17 26" stroke="var(--dx-accent)" stroke-width="3" stroke-linecap="round"/></svg>
             <div class="win-title"><b>DX-SR Hub</b><span>Professional Hub</span></div>
             <div class="dx-tags">
-              <span class="dx-tag" style="--c:#30FF6A"><i data-lucide="github"></i>v0.0.0.6</span>
+              <span class="dx-tag" style="--c:#30FF6A"><i data-lucide="github"></i>v0.0.0.7</span>
               <span class="dx-tag" style="--c:#FBBF24"><i data-lucide="crown"></i>Premium</span>
             </div>
             <div class="win-ctrl">
@@ -465,7 +465,7 @@ td { color: var(--muted); }
     <section class="doc" id="tag">
       <h2><i data-lucide="tag"></i>Tag</h2>
       <p>Small colored badges next to the window title, for a version number or a plan name. They pop in when created.</p>
-      <div class="stage"><span class="stage-label">Preview</span><div class="dx dx-tags" id="tag-demo"><span class="dx-tag" style="--c:#30FF6A"><i data-lucide="github"></i>v0.0.0.6</span><span class="dx-tag" style="--c:#FBBF24"><i data-lucide="crown"></i>Premium</span><span class="dx-tag" style="--c:#22D3EE"><i data-lucide="sparkles"></i>Beta</span></div></div>
+      <div class="stage"><span class="stage-label">Preview</span><div class="dx dx-tags" id="tag-demo"><span class="dx-tag" style="--c:#30FF6A"><i data-lucide="github"></i>v0.0.0.7</span><span class="dx-tag" style="--c:#FBBF24"><i data-lucide="crown"></i>Premium</span><span class="dx-tag" style="--c:#22D3EE"><i data-lucide="sparkles"></i>Beta</span></div></div>
       <div class="codebox"><pre data-code="tag"></pre></div>
       <div class="methods"><code>:SetTitle(text)</code><code>:SetColor(Color3)</code><code>:Destroy()</code></div>
     </section>
@@ -753,7 +753,7 @@ td { color: var(--muted); }
       <h2><i data-lucide="box"></i>Element API</h2>
       <p>Every element returns an object you keep in a variable. Elements with a <code class="inline">Flag</code> can also be found later through <code class="inline">DX.Flags</code>.</p>
       <div class="codebox solo"><pre data-code="element"></pre></div>
-      <div class="methods"><code>:SetTitle(text)</code><code>:SetDesc(text)</code><code>:Lock()</code><code>:Unlock()</code><code>:SetVisible(bool)</code><code>:Destroy()</code></div>
+      <div class="methods"><code>:SetTitle(text)</code><code>:SetDesc(text)</code><code>:Lock(reason?)</code><code>:Unlock()</code><code>:SetVisible(bool)</code><code>:Destroy()</code></div>
     </section>
 
     <section class="doc" id="themes">
@@ -812,7 +812,7 @@ window: `local Window = DX:CreateWindow({
     ToggleKey = Enum.KeyCode.RightShift,
     Theme = "DX-SR",
 })`,
-tag: `Window:Tag({Title = "v0.0.0.6", Icon = "github", Color = Color3.fromHex("#30FF6A")})
+tag: `Window:Tag({Title = "v0.0.0.7", Icon = "github", Color = Color3.fromHex("#30FF6A")})
 Window:Tag({Title = "Premium", Icon = "crown", Color = Color3.fromHex("#FBBF24")})`,
 tabs: `local Main = Window:Section({Title = "Main", Icon = "house", Opened = true})
 local Farm = Main:Tab({Title = "Farming", Icon = "tractor", Desc = "Automate every job with one click."})
