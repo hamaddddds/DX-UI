@@ -247,6 +247,21 @@ td { color: var(--muted); }
 :root[data-glass] .dx-card { background: color-mix(in srgb, var(--dx-el) 48%, transparent); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
 :root[data-glass] .dx-card:hover { background: color-mix(in srgb, var(--dx-elh) 58%, transparent); }
 :root[data-glass] :is(.dx-box, .dx-key, .dx-switch, .dx-track, .win-user, .win-tab.active) { background: color-mix(in srgb, var(--dx-field) 55%, transparent); }
+.win-user { position: relative; overflow: hidden; cursor: pointer; transition: background .2s; }
+.win-user:hover { background: var(--dx-elh); }
+.win-user > div { flex: 1; min-width: 0; }
+.win-user > :not(.eye) { transition: filter .35s, opacity .35s; }
+.win-user.private > :not(.eye) { filter: blur(5px); opacity: .7; }
+.win-user::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(110deg, var(--dx-el), color-mix(in srgb, var(--dx-el) 70%, transparent)); opacity: 0; transition: opacity .35s; pointer-events: none; }
+.win-user.private::after { opacity: .55; }
+.win-user .eye { position: relative; z-index: 1; display: grid; color: var(--dx-sub); }
+.win-user .eye svg { width: 14px; height: 14px; }
+.win-user .eye svg + svg, .win-user:not(.private) .eye svg:first-child { display: none; }
+.win-user:not(.private) .eye svg + svg { display: block; }
+.user-demo { width: 180px; }
+.bg-demo { position: relative; border-radius: 14px; padding: 16px; border: 1px solid var(--dx-stroke); background: radial-gradient(45% 60% at 18% 22%, #ec489966, transparent 70%), radial-gradient(40% 55% at 85% 30%, #22d3ee55, transparent 70%), radial-gradient(60% 70% at 55% 100%, #8b5cf680, transparent 70%), #120c2a; overflow: hidden; }
+.bg-demo::before { content: ""; position: absolute; inset: 0; background: var(--dx-bg); opacity: .5; }
+.bg-demo > * { position: relative; }
 :root[data-glass] :is(.dx-toast, .dx-dialog) { background: color-mix(in srgb, var(--dx-bg) 58%, transparent); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
 @keyframes winin { from { transform: scale(.9); opacity: 0; } }
 .win-top { position: relative; display: flex; align-items: center; gap: 12px; padding: 0 12px 0 16px; border-bottom: 1px solid var(--dx-stroke); overflow: hidden; }
@@ -310,7 +325,7 @@ td { color: var(--muted); }
 <header class="topnav">
   <div class="brand">
     <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#3B82F6"/></linearGradient></defs><path d="M4 6h8.5c6 0 10 4 10 10s-4 10-10 10H4z" fill="none" stroke="url(#g)" stroke-width="3" stroke-linejoin="round"/><path d="M17 6l11 20M28 6L17 26" stroke="url(#g)" stroke-width="3" stroke-linecap="round"/></svg>
-    DX-UI <small>v0.0.0.7</small>
+    DX-UI <small>v0.0.0.8</small>
   </div>
   <div class="themes" role="group" aria-label="Preview theme">
     <button type="button" data-theme-set="DX-SR" aria-pressed="true"><i style="background:linear-gradient(90deg,#3B82F6,#22D3EE)"></i>DX-SR</button>
@@ -327,6 +342,7 @@ td { color: var(--muted); }
     <a href="#install"><i data-lucide="download"></i>Installation</a>
     <a href="#window"><i data-lucide="app-window"></i>Window</a>
     <a href="#tag"><i data-lucide="tag"></i>Tag</a>
+    <a href="#user"><i data-lucide="circle-user"></i>User Card</a>
     <a href="#tabs"><i data-lucide="panel-left"></i>Sidebar &amp; Tab</a>
     <a href="#section"><i data-lucide="rows-3"></i>Section</a>
     <h4>Elements</h4>
@@ -346,6 +362,7 @@ td { color: var(--muted); }
     <a href="#element-api"><i data-lucide="box"></i>Element API</a>
     <a href="#themes"><i data-lucide="palette"></i>Themes</a>
     <a href="#config"><i data-lucide="save"></i>Config</a>
+    <a href="#background"><i data-lucide="wallpaper"></i>Background</a>
     <a href="#glass"><i data-lucide="sparkles"></i>Glass</a>
     <a href="#cursor"><i data-lucide="mouse-pointer-2"></i>Cursor</a>
     <a href="#mobile"><i data-lucide="smartphone"></i>Mobile</a>
@@ -368,7 +385,7 @@ td { color: var(--muted); }
             <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><path d="M4 6h8.5c6 0 10 4 10 10s-4 10-10 10H4z" fill="none" stroke="var(--dx-accent2)" stroke-width="3" stroke-linejoin="round"/><path d="M17 6l11 20M28 6L17 26" stroke="var(--dx-accent)" stroke-width="3" stroke-linecap="round"/></svg>
             <div class="win-title"><b>DX-SR Hub</b><span>Professional Hub</span></div>
             <div class="dx-tags">
-              <span class="dx-tag" style="--c:#30FF6A"><i data-lucide="github"></i>v0.0.0.7</span>
+              <span class="dx-tag" style="--c:#30FF6A"><i data-lucide="github"></i>v0.0.0.8</span>
               <span class="dx-tag" style="--c:#FBBF24"><i data-lucide="crown"></i>Premium</span>
             </div>
             <div class="win-ctrl">
@@ -383,32 +400,32 @@ td { color: var(--muted); }
               <div class="win-tabs">
                 <div class="win-group"><i data-lucide="house"></i>MAIN<i data-lucide="chevron-down"></i></div>
                 <div class="win-group-body"><div>
-                  <button type="button" class="win-tab active" data-tab="farm"><i data-lucide="tractor"></i>Farming</button>
-                  <button type="button" class="win-tab" data-tab="drag"><i data-lucide="flag"></i>Drag Race</button>
+                  <button type="button" class="win-tab active" data-tab="farm"><i data-lucide="sprout"></i>Farming</button>
+                  <button type="button" class="win-tab" data-tab="player"><i data-lucide="user"></i>Player</button>
                 </div></div>
                 <div class="win-group"><i data-lucide="layers"></i>MISC<i data-lucide="chevron-down"></i></div>
                 <div class="win-group-body"><div>
                   <button type="button" class="win-tab" data-tab="settings"><i data-lucide="settings"></i>Settings</button>
                 </div></div>
               </div>
-              <div class="win-user"><i></i><div><b>Hamburger</b><span>@hamadddd_s</span></div></div>
+              <div class="win-user private" data-user-blur role="button" tabindex="0" aria-pressed="true" aria-label="Show or hide your name"><i></i><div><b>DX-SR User</b><span>@dxsr_user</span></div><span class="eye"><i data-lucide="eye-off"></i><i data-lucide="eye"></i></span></div>
             </div>
             <div class="win-content">
               <div class="win-page show" data-page="farm">
-                <h5>Farming</h5><p>Automate every job with one click.</p>
+                <h5>Farming</h5><p>Automate the boring parts.</p>
                 <div class="dx-sec">
                   <div class="dx-sec-head"><i data-lucide="zap"></i>Auto Farm<hr><i data-lucide="chevron-down"></i></div>
                   <div class="dx-sec-body"><div>
-                    <div class="dx-card click" data-toggle><div class="dx-head"><div class="dx-txt"><span class="dx-t">Auto Office Worker</span></div><span class="dx-switch"><i></i></span></div></div>
+                    <div class="dx-card click" data-toggle><div class="dx-head"><div class="dx-txt"><span class="dx-t">Auto Farm</span></div><span class="dx-switch"><i></i></span></div></div>
                     <div class="dx-card"><div class="dx-head"><div class="dx-txt"><span class="dx-t">Walk Speed</span></div><span class="dx-box dx-num">80</span></div><div class="dx-slider"><div class="dx-track" data-min="16" data-max="200" data-value="80"><div class="dx-fill"></div><div class="dx-knob"></div></div></div></div>
-                    <div class="dx-card click dx-dd"><div class="dx-head"><div class="dx-txt"><span class="dx-t">Vehicle</span></div><span class="dx-box dx-select"><span>Kawzaki Ninja</span><i data-lucide="chevron-down"></i></span></div><div class="dx-expand"><div><div class="dx-options"><div class="dx-opt">Yamahax MioSporty<i data-lucide="check"></i></div><div class="dx-opt sel">Kawzaki Ninja<i data-lucide="check"></i></div><div class="dx-opt">Hando Vario<i data-lucide="check"></i></div></div></div></div></div>
+                    <div class="dx-card click dx-dd"><div class="dx-head"><div class="dx-txt"><span class="dx-t">Farm Method</span></div><span class="dx-box dx-select"><span>Tween</span><i data-lucide="chevron-down"></i></span></div><div class="dx-expand"><div><div class="dx-options"><div class="dx-opt sel">Tween<i data-lucide="check"></i></div><div class="dx-opt">Teleport<i data-lucide="check"></i></div><div class="dx-opt">Walk<i data-lucide="check"></i></div></div></div></div></div>
                   </div></div>
                 </div>
               </div>
-              <div class="win-page" data-page="drag">
-                <h5>Drag Race</h5>
-                <div class="dx-card click on" data-toggle><div class="dx-head"><div class="dx-txt"><span class="dx-t">Auto Drag Race</span></div><span class="dx-switch"><i></i></span></div></div>
-                <div class="dx-card click" data-toggle><div class="dx-head"><div class="dx-txt"><span class="dx-t">Speed Cracker</span></div><span class="dx-switch"><i></i></span></div></div>
+              <div class="win-page" data-page="player">
+                <h5>Player</h5>
+                <div class="dx-card click on" data-toggle><div class="dx-head"><div class="dx-txt"><span class="dx-t">Infinite Jump</span></div><span class="dx-switch"><i></i></span></div></div>
+                <div class="dx-card click" data-toggle><div class="dx-head"><div class="dx-txt"><span class="dx-t">Noclip</span></div><span class="dx-switch"><i></i></span></div></div>
               </div>
               <div class="win-page" data-page="settings">
                 <h5>Settings</h5>
@@ -434,7 +451,7 @@ td { color: var(--muted); }
     <section class="doc" id="window">
       <h2><i data-lucide="app-window"></i>Window</h2>
       <p>The window holds the topbar, the sidebar and the tab pages. It opens with a pop-in animation, can be dragged by the topbar, resized from the bottom-right corner, and is hidden or shown with the toggle key.</p>
-      <p>Every instance is named after what it holds, such as <code class="inline">[Group] Main</code>, <code class="inline">[Tab] Farming</code>, <code class="inline">[Section] Auto Farm</code> and <code class="inline">[Toggle] Auto Office Worker</code>, so the explorer reads like a set of folders.</p>
+      <p>Every instance is named after what it holds, such as <code class="inline">[Group] Main</code>, <code class="inline">[Tab] Farming</code>, <code class="inline">[Section] Auto Farm</code> and <code class="inline">[Toggle] Auto Farm</code>, so the explorer reads like a set of folders.</p>
       <div class="codebox solo"><pre data-code="window"></pre></div>
       <div class="table-wrap"><table>
         <thead><tr><th>Option</th><th>Type</th><th>Description</th></tr></thead>
@@ -451,23 +468,42 @@ td { color: var(--muted); }
           <tr><td>HideSearchBar</td><td>boolean</td><td>Removes the tab search field.</td></tr>
           <tr><td>ScrollBarEnabled</td><td>boolean</td><td>Set to false to hide page scroll bars.</td></tr>
           <tr><td>Resizable</td><td>boolean</td><td>Set to false to remove the resize handle.</td></tr>
-          <tr><td>User</td><td>false | table</td><td>User card at the bottom of the sidebar. <code class="inline">{Enabled = true, Anonymous = false, Callback = fn}</code></td></tr>
-          <tr><td>Glass</td><td>boolean</td><td>Starts with translucent glass panels. See Glass.</td></tr>
+          <tr><td>User</td><td>false | table</td><td>User card at the bottom of the sidebar. <code class="inline">{Enabled = true, Anonymous = false, Blur = true, Callback = fn}</code>. See User Card.</td></tr>
+          <tr><td>Background</td><td>string | number</td><td>Image behind the whole window, such as <code class="inline">"rbxassetid://123"</code>. See Background.</td></tr>
+          <tr><td>BackgroundImageTransparency</td><td>number</td><td>How see-through the background image is. Default 0.5.</td></tr>
+          <tr><td>Glass</td><td>boolean</td><td>Starts with translucent glass panels and the background blur. See Glass.</td></tr>
           <tr><td>Scale</td><td>number</td><td>Fixed UI scale. Leave empty to fit the screen automatically. See Mobile.</td></tr>
           <tr><td>Transparent</td><td>boolean</td><td>Same as Glass, kept for WindUI scripts.</td></tr>
           <tr><td>Cursor</td><td>boolean</td><td>Draws the DX cursor while the mouse is over the window. Default true. See Cursor.</td></tr>
         </tbody>
       </table></div>
       <h3>Window methods</h3>
-      <div class="methods"><code>:Tab()</code><code>:Section()</code><code>:Tag()</code><code>:SelectTab(tab | index)</code><code>:SetTitle()</code><code>:SetAuthor()</code><code>:Open()</code><code>:Close()</code><code>:Toggle()</code><code>:GetState()</code><code>:SetToggleKey()</code><code>:OnOpen(fn)</code><code>:OnClose(fn)</code><code>:OnDestroy(fn)</code><code>:Dialog()</code><code>:Notify()</code><code>:SetGlass(bool)</code><code>:SetScale(n)</code><code>:Divider()</code><code>:Space()</code><code>:EditOpenButton({Title, Icon, Enabled})</code><code>.Hovering</code><code>:LockAll()</code><code>:UnlockAll()</code><code>:Destroy()</code></div>
+      <div class="methods"><code>:Tab()</code><code>:Section()</code><code>:Tag()</code><code>:SelectTab(tab | index)</code><code>:SetTitle()</code><code>:SetAuthor()</code><code>:Open()</code><code>:Close()</code><code>:Toggle()</code><code>:GetState()</code><code>:SetToggleKey()</code><code>:OnOpen(fn)</code><code>:OnClose(fn)</code><code>:OnDestroy(fn)</code><code>:Dialog()</code><code>:Notify()</code><code>:SetGlass(bool)</code><code>:SetScale(n)</code><code>:Divider()</code><code>:Space()</code><code>:EditOpenButton({Title, Icon, Enabled})</code><code>:SetBackground(image, transparency?)</code><code>:SetBackgroundTransparency(n)</code><code>:SetUserBlur(bool)</code><code>.UserBlurred</code><code>.Hovering</code><code>:LockAll()</code><code>:UnlockAll()</code><code>:Destroy()</code></div>
     </section>
 
     <section class="doc" id="tag">
       <h2><i data-lucide="tag"></i>Tag</h2>
       <p>Small colored badges next to the window title, for a version number or a plan name. They pop in when created.</p>
-      <div class="stage"><span class="stage-label">Preview</span><div class="dx dx-tags" id="tag-demo"><span class="dx-tag" style="--c:#30FF6A"><i data-lucide="github"></i>v0.0.0.7</span><span class="dx-tag" style="--c:#FBBF24"><i data-lucide="crown"></i>Premium</span><span class="dx-tag" style="--c:#22D3EE"><i data-lucide="sparkles"></i>Beta</span></div></div>
+      <div class="stage"><span class="stage-label">Preview</span><div class="dx dx-tags" id="tag-demo"><span class="dx-tag" style="--c:#30FF6A"><i data-lucide="github"></i>v0.0.0.8</span><span class="dx-tag" style="--c:#FBBF24"><i data-lucide="crown"></i>Premium</span><span class="dx-tag" style="--c:#22D3EE"><i data-lucide="sparkles"></i>Beta</span></div></div>
       <div class="codebox"><pre data-code="tag"></pre></div>
       <div class="methods"><code>:SetTitle(text)</code><code>:SetColor(Color3)</code><code>:Destroy()</code></div>
+    </section>
+
+    <section class="doc" id="user">
+      <h2><i data-lucide="circle-user"></i>User Card</h2>
+      <p>The card at the bottom of the sidebar shows the player's avatar, display name and username. The whole card starts blurred under a frosted layer so screenshots and videos don't leak the account. Click the card to show it, and click again to blur it. The blur is drawn from random letters, so the real name can't be read back from it. <code class="inline">Anonymous = true</code> replaces the name with "Anonymous" and turns the blur off.</p>
+      <div class="stage"><span class="stage-label">Preview · click the card</span><div class="dx user-demo"><div class="win-user private" data-user-blur role="button" tabindex="0" aria-pressed="true" aria-label="Show or hide your name"><i></i><div><b>DX-SR User</b><span>@dxsr_user</span></div><span class="eye"><i data-lucide="eye-off"></i><i data-lucide="eye"></i></span></div></div></div>
+      <div class="codebox"><pre data-code="user"></pre></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Option</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>Enabled</td><td>boolean</td><td>Set to false, or pass <code class="inline">User = false</code>, to remove the card.</td></tr>
+          <tr><td>Blur</td><td>boolean</td><td>Starts with the whole card blurred. Default true.</td></tr>
+          <tr><td>Anonymous</td><td>boolean</td><td>Shows "Anonymous" and "@hidden" with no avatar.</td></tr>
+          <tr><td>Callback</td><td>function(blurred)</td><td>Runs on every click with the new blur state.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="methods"><code>Window:SetUserBlur(bool)</code><code>Window.UserBlurred</code></div>
     </section>
 
     <section class="doc" id="tabs">
@@ -520,7 +556,7 @@ td { color: var(--muted); }
       <h2><i data-lucide="toggle-right"></i>Toggle</h2>
       <p>An on/off switch. The callback receives the new state. Calling <code class="inline">:Set</code> also runs the callback unless you pass <code class="inline">true</code> as the second argument.</p>
       <div class="stage"><span class="stage-label">Preview</span><div class="dx dx-pane">
-        <div class="dx-card click" data-toggle><div class="dx-head"><div class="dx-txt"><span class="dx-t">Auto Office Worker</span><span class="dx-d">Answer questions and print documents automatically</span></div><span class="dx-switch"><i></i></span></div></div>
+        <div class="dx-card click" data-toggle><div class="dx-head"><div class="dx-txt"><span class="dx-t">Auto Farm</span><span class="dx-d">Farms the nearest target automatically</span></div><span class="dx-switch"><i></i></span></div></div>
         <div class="dx-card click on" data-toggle><div class="dx-head"><div class="dx-txt"><span class="dx-t">Noclip</span></div><span class="dx-switch"><i></i></span></div></div>
       </div></div>
       <div class="codebox"><pre data-code="toggle"></pre></div>
@@ -543,7 +579,7 @@ td { color: var(--muted); }
       <h2><i data-lucide="mouse-pointer-click"></i>Button</h2>
       <p>Runs the callback on click. The pointer icon on the right nudges when pressed.</p>
       <div class="stage"><span class="stage-label">Preview</span><div class="dx dx-pane">
-        <div class="dx-card click" data-button data-notify="Success" data-title="Teleport" data-msg="Teleported to the office."><div class="dx-head"><i data-lucide="map-pin"></i><div class="dx-txt"><span class="dx-t">Teleport to Office</span><span class="dx-d">Bypass teleport to the office start point</span></div><i class="dx-arrow" data-lucide="mouse-pointer-click"></i></div></div>
+        <div class="dx-card click" data-button data-notify="Success" data-title="Teleport" data-msg="Teleported to spawn."><div class="dx-head"><i data-lucide="map-pin"></i><div class="dx-txt"><span class="dx-t">Teleport to Spawn</span><span class="dx-d">Moves your character back to the spawn point</span></div><i class="dx-arrow" data-lucide="mouse-pointer-click"></i></div></div>
       </div><div class="dx-toasts dx"></div></div>
       <div class="codebox"><pre data-code="button"></pre></div>
       <div class="table-wrap"><table>
@@ -609,8 +645,8 @@ td { color: var(--muted); }
       <h2><i data-lucide="list"></i>Dropdown</h2>
       <p>Opens inside the card with a staggered list. Single mode closes after a pick; <code class="inline">Multi</code> keeps it open and returns a table. A search field appears with <code class="inline">Search = true</code> or when there are more than 8 options.</p>
       <div class="stage"><span class="stage-label">Preview</span><div class="dx dx-pane">
-        <div class="dx-card click dx-dd"><div class="dx-head"><div class="dx-txt"><span class="dx-t">Vehicle</span></div><span class="dx-box dx-select"><span>Yamahax MioSporty</span><i data-lucide="chevron-down"></i></span></div><div class="dx-expand"><div><div class="dx-options"><div class="dx-opt sel">Yamahax MioSporty<i data-lucide="check"></i></div><div class="dx-opt">Sizuki SatriaFU<i data-lucide="check"></i></div><div class="dx-opt">Kawzaki Ninja<i data-lucide="check"></i></div><div class="dx-opt">Hando Vario<i data-lucide="check"></i></div></div></div></div></div>
-        <div class="dx-card click dx-dd" data-multi><div class="dx-head"><div class="dx-txt"><span class="dx-t">Jobs</span><span class="dx-d">Pick multiple jobs</span></div><span class="dx-box dx-select"><span>Office Worker</span><i data-lucide="chevron-down"></i></span></div><div class="dx-expand"><div><div class="dx-options"><div class="dx-opt">Courier<i data-lucide="check"></i></div><div class="dx-opt">Barista<i data-lucide="check"></i></div><div class="dx-opt sel">Office Worker<i data-lucide="check"></i></div><div class="dx-opt">Drag Race<i data-lucide="check"></i></div></div></div></div></div>
+        <div class="dx-card click dx-dd"><div class="dx-head"><div class="dx-txt"><span class="dx-t">Weapon</span></div><span class="dx-box dx-select"><span>Sword</span><i data-lucide="chevron-down"></i></span></div><div class="dx-expand"><div><div class="dx-options"><div class="dx-opt sel">Sword<i data-lucide="check"></i></div><div class="dx-opt">Bow<i data-lucide="check"></i></div><div class="dx-opt">Staff<i data-lucide="check"></i></div><div class="dx-opt">Dagger<i data-lucide="check"></i></div></div></div></div></div>
+        <div class="dx-card click dx-dd" data-multi><div class="dx-head"><div class="dx-txt"><span class="dx-t">Collect</span><span class="dx-d">Pick what to pick up</span></div><span class="dx-box dx-select"><span>Coins</span><i data-lucide="chevron-down"></i></span></div><div class="dx-expand"><div><div class="dx-options"><div class="dx-opt sel">Coins<i data-lucide="check"></i></div><div class="dx-opt">Gems<i data-lucide="check"></i></div><div class="dx-opt">Chests<i data-lucide="check"></i></div><div class="dx-opt">Eggs<i data-lucide="check"></i></div></div></div></div></div>
       </div></div>
       <div class="codebox"><pre data-code="dropdown"></pre></div>
       <div class="table-wrap"><table>
@@ -652,7 +688,7 @@ td { color: var(--muted); }
       <h2><i data-lucide="pipette"></i>Colorpicker</h2>
       <p>Click the card to open a saturation square, a hue bar and a hex field. <code class="inline">:Set</code> runs the callback, so a color loaded from a config is applied right away.</p>
       <div class="stage"><span class="stage-label">Preview</span><div class="dx dx-pane">
-        <div class="dx-card click dx-cp open"><div class="dx-head"><div class="dx-txt"><span class="dx-t">Rank Color</span></div><span class="dx-swatch"></span></div><div class="dx-expand"><div><div class="dx-cp-body">
+        <div class="dx-card click dx-cp open"><div class="dx-head"><div class="dx-txt"><span class="dx-t">Highlight Color</span></div><span class="dx-swatch"></span></div><div class="dx-expand"><div><div class="dx-cp-body">
           <div class="dx-cp-area"><div class="dx-sv"><i></i></div><div class="dx-hue"><i></i></div></div>
           <div class="dx-cp-row"><span class="dx-prev"></span><span class="dx-box dx-hex"></span><span class="dx-rgb"></span></div>
         </div></div></div></div>
@@ -674,7 +710,7 @@ td { color: var(--muted); }
       <h2><i data-lucide="file-text"></i>Paragraph</h2>
       <p>A read-only card for status text. Update the text with <code class="inline">:SetDesc</code> from a loop to show live values. Optional color bar and action buttons.</p>
       <div class="stage"><span class="stage-label">Preview</span><div class="dx dx-pane">
-        <div class="dx-card dx-para"><div class="dx-head"><div class="dx-txt"><span class="dx-t">Status</span><span class="dx-d" id="para-desc">Answering question 12</span></div></div>
+        <div class="dx-card dx-para"><div class="dx-head"><div class="dx-txt"><span class="dx-t">Status</span><span class="dx-d" id="para-desc">Farming · 12 coins collected</span></div></div>
           <div class="dx-btnrow"><button type="button" class="dx-btn primary" id="para-refresh"><i data-lucide="refresh-cw"></i>Refresh</button><button type="button" class="dx-btn"><i data-lucide="copy"></i>Copy Log</button></div></div>
       </div></div>
       <div class="codebox"><pre data-code="paragraph"></pre></div>
@@ -695,7 +731,7 @@ td { color: var(--muted); }
       <h2><i data-lucide="type"></i>Label, Divider, Space &amp; Code</h2>
       <p>Plain helpers for spacing and text. <code class="inline">Code</code> shows a monospace block with a copy button.</p>
       <div class="stage"><span class="stage-label">Preview</span><div class="dx dx-pane">
-        <div class="dx-label">Teleport locations coming soon.</div>
+        <div class="dx-label">More locations coming soon.</div>
         <div class="dx-sub">Updated every 5 seconds</div>
         <div class="dx-divider"></div>
         <div class="dx-code"><div>Loader<i data-lucide="copy"></i></div><pre>local DX = loadstring(game:HttpGet("..."))()</pre></div>
@@ -726,7 +762,7 @@ td { color: var(--muted); }
           <tr><td>Content</td><td>string</td><td>Body text. Rich text works.</td></tr>
           <tr><td>Type</td><td>string</td><td>Info, Success, Warning or Error. Sets the icon and color.</td></tr>
           <tr><td>Icon</td><td>string</td><td>Replaces the type icon.</td></tr>
-          <tr><td>Image</td><td>string | number</td><td>Large thumbnail (asset id or Lucide name) in place of the icon, for example a fish picture.</td></tr>
+          <tr><td>Image</td><td>string | number</td><td>Large thumbnail (asset id or Lucide name) in place of the icon, for example an item picture.</td></tr>
           <tr><td>Color</td><td>Color3</td><td>Custom accent for the stroke, icon box, subtitle and bar, for example a rarity color.</td></tr>
           <tr><td>SubTitle</td><td>string</td><td>Small colored line under the title. Rich text works.</td></tr>
           <tr><td>Placement</td><td>string</td><td>"Top" drops the toast from the top center. Default is the bottom right.</td></tr>
@@ -770,11 +806,29 @@ td { color: var(--muted); }
       <div class="methods"><code>:CreateConfig(name)</code><code>Config:Register(flag, element)</code><code>Config:Save()</code><code>Config:Load()</code><code>Config:Delete()</code><code>:AllConfigs()</code><code>:SetAutoLoad(name)</code><code>:LoadAutoLoad()</code></div>
     </section>
 
+    <section class="doc" id="background">
+      <h2><i data-lucide="wallpaper"></i>Background</h2>
+      <p>Puts an image behind the whole window: the topbar, the sidebar and the page. It is cropped to fill the window and fades in when it changes. Use the image id, not the decal id, or an <code class="inline">rbxthumb://</code> link. Turn on Glass as well to see the image through the element cards.</p>
+      <div class="stage"><span class="stage-label">Preview</span><div class="dx dx-pane bg-demo">
+        <div class="dx-card click on" data-toggle><div class="dx-head"><div class="dx-txt"><span class="dx-t">Auto Farm</span></div><span class="dx-switch"><i></i></span></div></div>
+        <div class="dx-card dx-para"><div class="dx-head"><div class="dx-txt"><span class="dx-t">Status</span><span class="dx-d">Farming · 12 coins collected</span></div></div></div>
+      </div></div>
+      <div class="codebox"><pre data-code="background"></pre></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Option</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>Background</td><td>string | number</td><td><code class="inline">rbxassetid://</code>, <code class="inline">rbxthumb://</code> or a plain image id.</td></tr>
+          <tr><td>BackgroundImageTransparency</td><td>number</td><td>0 shows the image fully, 1 hides it. Default 0.5 keeps text readable.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="methods"><code>Window:SetBackground(image, transparency?)</code><code>Window:SetBackground(nil)</code><code>Window:SetBackgroundTransparency(n)</code></div>
+    </section>
+
     <section class="doc" id="glass">
       <h2><i data-lucide="sparkles"></i>Glass</h2>
-      <p>Glass mode turns the window, element cards, fields, notifications and dialogs translucent with a soft sheen, so the game shows through. Roblox cannot blur what is behind a GUI, so in game the glass is see-through without the blur this page adds. Switch it on with the Glass button at the top, or the floating card on the window preview.</p>
+      <p>Glass mode turns the window, element cards, fields, notifications and dialogs translucent with a soft sheen, and blurs the game world behind the window like frosted glass. The blur uses a glass part in front of the camera with a depth of field effect. It only shows at graphics quality 8 or higher (or Automatic), and it blurs the 3D world, not other GUIs. While it is on, the game's own depth of field effects are paused, and they come back when glass is turned off. Switch it on with the Glass button at the top, or the floating card on the window preview.</p>
       <div class="codebox solo"><pre data-code="glass"></pre></div>
-      <div class="methods"><code>Glass = true</code><code>Window:SetGlass(bool)</code><code>DX:SetGlass(bool)</code><code>DX.Glass</code></div>
+      <div class="methods"><code>Glass = true</code><code>Window:SetGlass(bool)</code><code>DX:SetGlass(bool)</code><code>DX.Glass</code><code>Graphics 8+ for the blur</code></div>
     </section>
 
     <section class="doc" id="cursor">
@@ -804,19 +858,33 @@ const LOADER = 'local DX = loadstring(game:HttpGet("https://raw.githubuserconten
 const CODE = {
 install: LOADER,
 window: `local Window = DX:CreateWindow({
-    Title = "DX-SR Hub",
-    Author = "Professional Hub",
+    Title = "Example Hub",
+    Author = "by you",
     Icon = "rbxthumb://type=Asset&id=136921327637425&w=420&h=420",
-    Folder = "DX-SR",
+    Folder = "ExampleHub",
     Size = UDim2.fromOffset(700, 480),
     ToggleKey = Enum.KeyCode.RightShift,
     Theme = "DX-SR",
+    Background = "rbxassetid://136921327637425",
+    Glass = true,
 })`,
-tag: `Window:Tag({Title = "v0.0.0.7", Icon = "github", Color = Color3.fromHex("#30FF6A")})
+tag: `Window:Tag({Title = "v0.0.0.8", Icon = "github", Color = Color3.fromHex("#30FF6A")})
 Window:Tag({Title = "Premium", Icon = "crown", Color = Color3.fromHex("#FBBF24")})`,
+user: `local Window = DX:CreateWindow({
+    Title = "Example Hub",
+    User = {
+        Blur = true,
+        Callback = function(blurred)
+            print("name hidden:", blurred)
+        end,
+    },
+})
+
+Window:SetUserBlur(false)
+print(Window.UserBlurred)`,
 tabs: `local Main = Window:Section({Title = "Main", Icon = "house", Opened = true})
-local Farm = Main:Tab({Title = "Farming", Icon = "tractor", Desc = "Automate every job with one click."})
-local Drag = Main:Tab({Title = "Drag Race", Icon = "flag"})
+local Farm = Main:Tab({Title = "Farming", Icon = "sprout", Desc = "Automate the boring parts."})
+local Player = Main:Tab({Title = "Player", Icon = "user"})
 
 local Misc = Window:Section({Title = "Misc", Icon = "layers"})
 local Settings = Misc:Tab({Title = "Settings", Icon = "settings"})
@@ -846,25 +914,30 @@ Advanced:Input({
     Flag = "WebhookUrl",
     Callback = function(text) end
 })`,
-toggle: `local AutoOffice = Farm:Toggle({
-    Title = "Auto Office Worker",
-    Desc = "Answer questions and print documents automatically",
+toggle: `local AutoFarm = Farm:Toggle({
+    Title = "Auto Farm",
+    Desc = "Farms the nearest target automatically",
     Type = "Toggle",
     Value = false,
-    Flag = "AutoOffice",
+    Flag = "AutoFarm",
     Callback = function(state)
-        print("Auto Office", state)
+        print("Auto Farm", state)
     end,
 })
 
-AutoOffice:Set(true)
-print(AutoOffice:Get())`,
+AutoFarm:Set(true)
+print(AutoFarm:Get())`,
 button: `Farm:Button({
-    Title = "Teleport to Office",
-    Desc = "Bypass teleport to the office start point",
+    Title = "Teleport to Spawn",
+    Desc = "Moves your character back to the spawn point",
     Icon = "map-pin",
     Callback = function()
-        DX:Notify({Title = "Teleport", Content = "Teleported to the office.", Type = "Success"})
+        local spawn = workspace:FindFirstChildWhichIsA("SpawnLocation", true)
+        local character = game.Players.LocalPlayer.Character
+        if spawn and character then
+            character:PivotTo(spawn.CFrame + Vector3.new(0, 4, 0))
+        end
+        DX:Notify({Title = "Teleport", Content = "Teleported to spawn.", Type = "Success"})
     end,
 })`,
 slider: `Farm:Slider({
@@ -891,42 +964,42 @@ input: `Farm:Input({
 
 Farm:Input({Title = "Target Amount", Numeric = true, Flag = "Target"})
 Farm:Input({Title = "Notes", Type = "Textarea", Placeholder = "Write anything"})`,
-dropdown: `local Vehicle = Farm:Dropdown({
-    Title = "Vehicle",
-    Values = {"Yamahax MioSporty", "Sizuki SatriaFU", "Kawzaki Ninja", "Hando Vario"},
-    Value = "Yamahax MioSporty",
-    Flag = "Vehicle",
+dropdown: `local Weapon = Farm:Dropdown({
+    Title = "Weapon",
+    Values = {"Sword", "Bow", "Staff", "Dagger"},
+    Value = "Sword",
+    Flag = "Weapon",
     Callback = function(option)
         print(option)
     end,
 })
 
 Farm:Dropdown({
-    Title = "Jobs",
-    Desc = "Pick multiple jobs",
+    Title = "Collect",
+    Desc = "Pick what to pick up",
     Multi = true,
-    Values = {"Courier", "Barista", "Office Worker", "Drag Race"},
-    Value = {"Office Worker"},
-    Flag = "Jobs",
+    Values = {"Coins", "Gems", "Chests", "Eggs"},
+    Value = {"Coins"},
+    Flag = "Collect",
     Callback = function(options)
         print(table.concat(options, ", "))
     end,
 })
 
-Vehicle:Refresh({"Hando Beat", "Hando Vario"})`,
+Weapon:Refresh({"Sword", "Axe"})`,
 keybind: `Farm:Keybind({
     Title = "Toggle Farm",
     Desc = "Start or stop the farm",
     Value = "F",
     Flag = "FarmKey",
     Pressed = function()
-        AutoOffice:Set(not AutoOffice:Get())
+        AutoFarm:Set(not AutoFarm:Get())
     end,
 })`,
 colorpicker: `Farm:Colorpicker({
-    Title = "Rank Color",
+    Title = "Highlight Color",
     Default = Color3.fromRGB(0, 255, 212),
-    Flag = "RankColor",
+    Flag = "HighlightColor",
     Callback = function(color)
         print(color:ToHex())
     end,
@@ -941,25 +1014,26 @@ paragraph: `local Status = Farm:Paragraph({
     },
 })
 
-Status:SetDesc("Answering question 12")`,
-text: `Tele:Label("Teleport locations coming soon.")
-Tele:SubLabel("Updated every 5 seconds")
-Tele:Divider()
-Tele:Space(12)
-Tele:Code({Title = "Loader", Code = 'local DX = loadstring(game:HttpGet("..."))()'})`,
+Status:SetDesc("Farming · 12 coins collected")`,
+text: `Farm:Label("More locations coming soon.")
+Farm:SubLabel("Updated every 5 seconds")
+Farm:Divider()
+Farm:Space(12)
+Farm:Code({Title = "Loader", Code = 'local DX = loadstring(game:HttpGet("..."))()'})`,
 notify: `DX:Notify({
     Title = "Auto Farm",
-    Content = "Office Worker farm started.",
+    Content = "Auto Farm started.",
     Type = "Success",
     Duration = 5,
 })
 
 DX:Notify({
-    Title = "Sockeye Salmon",
-    SubTitle = "Common",
-    Content = "At <b>3.6</b>kg  ·  (<b>1/9</b>)",
-    Image = "rbxassetid://75669332719913",
-    Color = Color3.fromHex("#8EBBBF"),
+    Title = "Golden Chest",
+    SubTitle = "Legendary",
+    Content = "Found <b>1</b>  ·  total <b>4</b>",
+    Image = "gem",
+    Layout = "Media",
+    Color = Color3.fromHex("#FBBF24"),
     Placement = "Top",
 })`,
 dialog: `Window:Dialog({
@@ -981,7 +1055,7 @@ Speed:Lock()
 Speed:Unlock()
 Speed:SetVisible(false)
 
-DX.Flags.AutoOffice:Set(false)
+DX.Flags.AutoFarm:Set(false)
 print(DX.Flags.WalkSpeed:Get())`,
 themes: `DX:SetTheme("Midnight")
 
@@ -1015,18 +1089,42 @@ Configs:LoadAutoLoad()
 
 print(table.concat(Configs:AllConfigs(), ", "))`,
 cursor: `local Window = DX:CreateWindow({
-    Title = "HUSH",
+    Title = "Example Hub",
     Cursor = true,
 })
 
 game:GetService("RunService").RenderStepped:Connect(function()
-    local reticle = game.Players.LocalPlayer.PlayerGui:FindFirstChild("HushReticle")
-    if reticle then
-        reticle.Enabled = not Window.Hovering
+    local crosshair = game.Players.LocalPlayer.PlayerGui:FindFirstChild("Crosshair")
+    if crosshair then
+        crosshair.Enabled = not Window.Hovering
     end
 end)`,
+background: `local Window = DX:CreateWindow({
+    Title = "Example Hub",
+    Background = "rbxassetid://136921327637425",
+    BackgroundImageTransparency = 0.5,
+})
+
+Settings:Input({
+    Title = "Background Image",
+    Placeholder = "Image id",
+    Flag = "BackgroundImage",
+    Callback = function(text)
+        Window:SetBackground(text ~= "" and text or nil)
+    end,
+})
+
+Settings:Slider({
+    Title = "Background Transparency",
+    Value = {Min = 0, Max = 1, Default = 0.5},
+    Step = 0.05,
+    Flag = "BackgroundTransparency",
+    Callback = function(value)
+        Window:SetBackgroundTransparency(value)
+    end,
+})`,
 glass: `local Window = DX:CreateWindow({
-    Title = "DX-SR Hub",
+    Title = "Example Hub",
     Glass = true,
 })
 
@@ -1039,7 +1137,7 @@ Settings:Toggle({
     end,
 })`,
 mobile: `local Window = DX:CreateWindow({
-    Title = "DX-SR Hub",
+    Title = "Example Hub",
     Size = UDim2.fromOffset(700, 480),
     Scale = DX.IsMobile and 0.75 or nil,
 })
@@ -1054,7 +1152,7 @@ Settings:Slider({
 })
 
 Window:SetScale(nil)`,
-icons: `Main:Tab({Title = "Farming", Icon = "tractor"})
+icons: `Main:Tab({Title = "Farming", Icon = "sprout"})
 Main:Tab({Title = "Shop", Icon = "rbxassetid://136921327637425"})
 Main:Tab({Title = "Logo", Icon = 136921327637425})
 
@@ -1113,7 +1211,7 @@ function ripple(card, ev) {
   setTimeout(() => dot.remove(), 600);
 }
 
-const KINDS = { Info: ['info', 'var(--dx-accent)', 'Webhook connected.'], Success: ['circle-check', 'var(--dx-ok)', 'Office Worker farm started.'], Warning: ['triangle-alert', 'var(--dx-warn)', 'Webhook URL is empty.'], Error: ['circle-x', 'var(--dx-err)', 'Remote not found, retrying.'] };
+const KINDS = { Info: ['info', 'var(--dx-accent)', 'Webhook connected.'], Success: ['circle-check', 'var(--dx-ok)', 'Auto Farm started.'], Warning: ['triangle-alert', 'var(--dx-warn)', 'Webhook URL is empty.'], Error: ['circle-x', 'var(--dx-err)', 'Remote not found, retrying.'] };
 function notify(scope, type, title, msg) {
   const box = scope.querySelector('.dx-toasts');
   if (!box) return;
@@ -1283,11 +1381,24 @@ winSearch.addEventListener('input', () => {
   document.querySelectorAll('#demo-window .win-group').forEach(g => g.classList.toggle('closed', false));
 });
 
-const STATUS = ['Answering question 12', 'Walking to printer', 'Printing document 4', 'Waiting for next question'];
+const STATUS = ['Farming · 12 coins collected', 'Walking to the next target', 'Collecting a drop', 'Waiting for respawn'];
 let si = 0;
 document.getElementById('para-refresh').addEventListener('click', () => {
   si = (si + 1) % STATUS.length;
   document.getElementById('para-desc').textContent = STATUS[si];
+});
+
+function toggleUser(card) {
+  card.setAttribute('aria-pressed', String(card.classList.toggle('private')));
+  ripple(card);
+}
+document.addEventListener('click', e => {
+  const card = e.target.closest('[data-user-blur]');
+  if (card) toggleUser(card);
+});
+document.addEventListener('keydown', e => {
+  const card = e.target.closest && e.target.closest('[data-user-blur]');
+  if (card && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); toggleUser(card); }
 });
 
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;

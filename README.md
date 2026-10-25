@@ -1,6 +1,6 @@
 # DX-UI
 
-The DX-SR interface library for Roblox. One window, sidebar groups, tabs, sections and 14 animated elements, Lucide icons, themes, config saving, glass mode, custom cursor and mobile auto scale. The API follows WindUI.
+The DX-SR interface library for Roblox. One window, sidebar groups, tabs, sections and 14 animated elements, Lucide icons, themes, config saving, background images, glass mode that blurs the game behind the window, a privacy-blurred user card, custom cursor and mobile auto scale. The API follows WindUI.
 
 Docs: https://hamaddddds.github.io/DX-UI/
 
@@ -14,14 +14,16 @@ local DX = loadstring(game:HttpGet("https://raw.githubusercontent.com/hamaddddds
 
 ```lua
 local Window = DX:CreateWindow({
-    Title = "DX-SR Hub",
-    Author = "Professional Hub",
-    Folder = "DX-SR",
+    Title = "Example Hub",
+    Author = "by you",
+    Folder = "ExampleHub",
     Size = UDim2.fromOffset(700, 480),
+    Background = "rbxassetid://136921327637425",
+    Glass = true,
 })
 
 local Main = Window:Section({Title = "Main", Icon = "house"})
-local Farm = Main:Tab({Title = "Farming", Icon = "tractor"})
+local Farm = Main:Tab({Title = "Farming", Icon = "sprout"})
 Farm:Section({Title = "Auto Farm"})
 
 Farm:Toggle({

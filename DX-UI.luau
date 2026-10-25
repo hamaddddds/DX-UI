@@ -1,5 +1,5 @@
 local DX = {
-    Version = "0.0.0.7",
+    Version = "0.0.0.8",
     Flags = {},
     Themes = {},
     Theme = "DX-SR",
@@ -12,6 +12,7 @@ local UserInputService = game:GetService("UserInputService")
 local HttpService = game:GetService("HttpService")
 local GuiService = game:GetService("GuiService")
 local RunService = game:GetService("RunService")
+local Lighting = game:GetService("Lighting")
 local LocalPlayer = Players.LocalPlayer
 
 DX.IsMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
@@ -122,12 +123,59 @@ local function OnGlass(hook)
     hook(DX.Glass)
 end
 
+local AcrylicEffect
+local AcrylicMuted = {}
+
+local function AcrylicQuality()
+    local ok, level = pcall(function() return UserSettings():GetService("UserGameSettings").SavedQualityLevel end)
+    return not ok or level.Value == 0 or level.Value >= 8
+end
+
+local function SyncAcrylic()
+    local on = DX.Glass and #DX.Windows > 0 and AcrylicQuality()
+    if on and not (AcrylicEffect and AcrylicEffect.Parent) then
+        for _, holder in ipairs({Lighting, workspace.CurrentCamera}) do
+            for _, effect in ipairs(holder:GetChildren()) do
+                if effect:IsA("DepthOfFieldEffect") and effect.Enabled then
+                    AcrylicMuted[effect] = true
+                    effect.Enabled = false
+                end
+            end
+        end
+        if not AcrylicEffect then
+            AcrylicEffect = Instance.new("DepthOfFieldEffect")
+            AcrylicEffect.Name = "DXAcrylic"
+            AcrylicEffect.FarIntensity = 0
+            AcrylicEffect.InFocusRadius = 0.1
+            AcrylicEffect.NearIntensity = 1
+        end
+        AcrylicEffect.Parent = Lighting
+    elseif not on then
+        if AcrylicEffect then AcrylicEffect.Parent = nil end
+        for effect in pairs(AcrylicMuted) do pcall(function() effect.Enabled = true end) end
+        table.clear(AcrylicMuted)
+    end
+end
+
+local function ResetAcrylic()
+    if AcrylicEffect then AcrylicEffect.Parent = nil end
+    task.delay(0.5, SyncAcrylic)
+end
+
+pcall(function()
+    UserSettings():GetService("UserGameSettings"):GetPropertyChangedSignal("SavedQualityLevel"):Connect(ResetAcrylic)
+end)
+pcall(function()
+    settings().Rendering:GetPropertyChangedSignal("QualityLevel"):Connect(ResetAcrylic)
+end)
+
 function DX:SetGlass(state)
     DX.Glass = state and true or false
     for object, levels in pairs(GlassTargets) do
         pcall(Tween, object, 0.35, {BackgroundTransparency = DX.Glass and levels[2] or levels[1]})
     end
     for _, hook in ipairs(GlassHooks) do pcall(hook, DX.Glass) end
+    SyncAcrylic()
 end
 
 local function ScaleOf(object)
@@ -1674,6 +1722,7 @@ function DX:CreateWindow(config)
     local glass = config.Glass
     if glass == nil then glass = config.Transparent end
     if glass ~= nil then DX.Glass = glass == true end
+    SyncAcrylic()
     local minSize = config.MinSize or Vector2.new(520, 340)
     local maxSize = config.MaxSize or Vector2.new(960, 680)
     local size = config.Size or UDim2.fromOffset(660, 460)
@@ -1697,6 +1746,37 @@ function DX:CreateWindow(config)
     local main = New("Frame", {Name = "Main", Size = UDim2.fromScale(1, 1), Theme = {BackgroundColor3 = "Background"}, Parent = canvas}, {Corner(14), Stroke("Stroke")})
     local sheen = New("UIGradient", {Rotation = 35, Transparency = NumberSequence.new(0, 0.35), Parent = main})
     OnGlass(function(state) sheen.Enabled = state end)
+    local backdrop = New("ImageLabel", {Name = "Backdrop", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Crop, Image = "", ImageTransparency = 1, Visible = false, ZIndex = 0, Parent = main}, {Corner(14)})
+    local backdropTransparency = config.BackgroundImageTransparency or 0.5
+
+    local blurPart = New("Part", {Name = "DXAcrylic", Material = Enum.Material.Glass, Color = Color3.new(0, 0, 0), Transparency = 0.98, Size = Vector3.new(1, 1, 0), Anchored = true, CanCollide = false, CanQuery = false, CanTouch = false, CastShadow = false})
+    local blurMesh = New("SpecialMesh", {MeshType = Enum.MeshType.Brick, Offset = Vector3.new(0, 0, -0.000001), Parent = blurPart})
+    local blurBind = "DXAcrylic" .. HttpService:GenerateGUID(false)
+    local function screenPoint(camera, x, y)
+        local ray = camera:ScreenPointToRay(x, y)
+        return ray.Origin + ray.Direction * 0.001
+    end
+    RunService:BindToRenderStep(blurBind, Enum.RenderPriority.Camera.Value + 1, function()
+        local camera = workspace.CurrentCamera
+        if not (camera and AcrylicEffect and AcrylicEffect.Parent and Window.Opened and holder.Visible) then
+            blurPart.Parent = nil
+            return
+        end
+        local inset = 5 * scale.Scale
+        local position = main.AbsolutePosition + Vector2.new(inset, inset)
+        local extent = main.AbsoluteSize - Vector2.new(inset * 2, inset * 2)
+        local topLeft = screenPoint(camera, position.X, position.Y)
+        local topRight = screenPoint(camera, position.X + extent.X, position.Y)
+        local bottomRight = screenPoint(camera, position.X + extent.X, position.Y + extent.Y)
+        local view = camera.CFrame
+        blurPart.CFrame = CFrame.fromMatrix((topLeft + bottomRight) / 2, view.XVector, view.YVector, view.ZVector)
+        blurMesh.Scale = Vector3.new((topRight - topLeft).Magnitude, (topRight - bottomRight).Magnitude, 0)
+        blurPart.Parent = camera
+    end)
+    Window.AcrylicCleanup = function()
+        pcall(function() RunService:UnbindFromRenderStep(blurBind) end)
+        blurPart:Destroy()
+    end
 
     local topbar = New("Frame", {Name = "Topbar", Size = UDim2.new(1, 0, 0, topHeight), BackgroundTransparency = 1, ClipsDescendants = true, Parent = main})
     New("Frame", {Name = "Line", AnchorPoint = Vector2.new(0, 1), Position = UDim2.fromScale(0, 1), Size = UDim2.new(1, 0, 0, 1), Theme = {BackgroundColor3 = "Stroke"}, BorderSizePixel = 0, Parent = topbar})
@@ -1783,17 +1863,78 @@ function DX:CreateWindow(config)
         Parent = sidebar,
     }, {Padding(10, 10, 4, 10), List(4)})
 
+    function Window:SetUserBlur() end
     if showUser then
         local userConfig = type(config.User) == "table" and config.User or {}
         local card = New("TextButton", {Name = "User", Text = "", AutoButtonColor = false, AnchorPoint = Vector2.new(0, 1), Position = UDim2.new(0, 10, 1, -10), Size = UDim2.new(1, -20, 0, 44), Theme = {BackgroundColor3 = "Element"}, Parent = sidebar}, {Corner(10), Stroke("Stroke", 0.4)})
         local anonymous = userConfig.Anonymous == true
+        local private = not anonymous
+        local textWidth = private and -76 or -54
         local avatar = New("ImageLabel", {Name = "Avatar", Position = UDim2.fromOffset(8, 7), Size = UDim2.fromOffset(30, 30), Theme = {BackgroundColor3 = "Field"}, Image = anonymous and "" or ("rbxthumb://type=AvatarHeadShot&id=" .. LocalPlayer.UserId .. "&w=150&h=150"), Parent = card}, {Corner(Round)})
-        Stroke("Accent", 0.3, 1.5).Parent = avatar
-        Text({Text = anonymous and "Anonymous" or LocalPlayer.DisplayName, TextSize = 13, FontFace = GetFont(Weight.SemiBold), Position = UDim2.fromOffset(46, 6), Size = UDim2.new(1, -54, 0, 16), TextTruncate = Enum.TextTruncate.AtEnd, Parent = card})
-        Text({Text = anonymous and "@hidden" or ("@" .. LocalPlayer.Name), TextSize = 11, Theme = {TextColor3 = "SubText"}, Position = UDim2.fromOffset(46, 23), Size = UDim2.new(1, -54, 0, 14), TextTruncate = Enum.TextTruncate.AtEnd, Parent = card})
-        card.MouseEnter:Connect(function() Retheme(card, "BackgroundColor3", "ElementHover", 0.2) end)
-        card.MouseLeave:Connect(function() Retheme(card, "BackgroundColor3", "Element", 0.2) end)
-        card.MouseButton1Click:Connect(function() SafeCall(userConfig.Callback) end)
+        local avatarStroke = Stroke("Accent", 0.3, 1.5)
+        avatarStroke.Parent = avatar
+        local nameLabel = Text({Name = "DisplayName", Text = anonymous and "Anonymous" or LocalPlayer.DisplayName, TextSize = 13, FontFace = GetFont(Weight.SemiBold), Position = UDim2.fromOffset(46, 6), Size = UDim2.new(1, textWidth, 0, 16), TextTruncate = Enum.TextTruncate.AtEnd, Parent = card})
+        local userLabel = Text({Name = "Username", Text = anonymous and "@hidden" or ("@" .. LocalPlayer.Name), TextSize = 11, Theme = {TextColor3 = "SubText"}, Position = UDim2.fromOffset(46, 23), Size = UDim2.new(1, textWidth, 0, 14), TextTruncate = Enum.TextTruncate.AtEnd, Parent = card})
+        local frost
+        card.MouseEnter:Connect(function()
+            Retheme(card, "BackgroundColor3", "ElementHover", 0.2)
+            if frost then Retheme(frost, "BackgroundColor3", "ElementHover", 0.2) end
+        end)
+        card.MouseLeave:Connect(function()
+            Retheme(card, "BackgroundColor3", "Element", 0.2)
+            if frost then Retheme(frost, "BackgroundColor3", "Element", 0.2) end
+        end)
+        if private then
+            frost = New("Frame", {Name = "Frost", Size = UDim2.fromScale(1, 1), Theme = {BackgroundColor3 = "Element"}, BackgroundTransparency = 1, ZIndex = 3, Parent = card}, {Corner(10)})
+            New("UIGradient", {Rotation = 20, Transparency = NumberSequence.new(0, 0.3), Parent = frost})
+            local eye = Icon("eye-off", 14, "SubText", {Name = "Privacy", AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -10, 0.5, 0), ZIndex = 4, Parent = card})
+            local ghosts = {}
+            local function scramble(value)
+                return (value:gsub("[%w_]", function() return string.char(96 + math.random(1, 26)) end))
+            end
+            local function addGhosts(source, kind)
+                local own = {}
+                source:GetPropertyChangedSignal("Size"):Connect(function()
+                    for _, ghost in ipairs(own) do ghost.Size = source.Size end
+                end)
+                for ring = 1, 2 do
+                    for index = 0, 7 do
+                        local angle = index * math.pi / 4 + ring * 0.4
+                        local ghost
+                        if kind == "Image" then
+                            ghost = New("ImageLabel", {Name = "Ghost", Image = source.Image, BackgroundTransparency = 1, Size = source.Size, Position = source.Position, ImageTransparency = 1, Parent = card}, {Corner(Round)})
+                        else
+                            ghost = Text({Name = "Ghost", Text = scramble(source.Text), TextSize = source.TextSize, FontFace = source.FontFace, Theme = {TextColor3 = kind}, Size = source.Size, Position = source.Position, TextTruncate = Enum.TextTruncate.AtEnd, TextTransparency = 1, Parent = card})
+                        end
+                        table.insert(own, ghost)
+                        table.insert(ghosts, {ghost, source.Position, Vector2.new(math.cos(angle), math.sin(angle)) * 3.5 * ring, kind == "Image" and "ImageTransparency" or "TextTransparency"})
+                    end
+                end
+            end
+            addGhosts(avatar, "Image")
+            addGhosts(nameLabel, "Text")
+            addGhosts(userLabel, "SubText")
+            function Window:SetUserBlur(state, instant)
+                Window.UserBlurred = state ~= false
+                local on = Window.UserBlurred
+                local time = instant and 0 or 0.35
+                for _, ghost in ipairs(ghosts) do
+                    local spread = on and ghost[3] or ghost[3] * 0.3
+                    Tween(ghost[1], time, {[ghost[4]] = on and 0.86 or 1, Position = ghost[2] + UDim2.fromOffset(spread.X, spread.Y)})
+                end
+                Tween(nameLabel, time, {TextTransparency = on and 1 or 0})
+                Tween(userLabel, time, {TextTransparency = on and 1 or 0})
+                Tween(avatar, time, {ImageTransparency = on and 1 or 0})
+                Tween(avatarStroke, time, {Transparency = on and 1 or 0.3})
+                Tween(frost, time, {BackgroundTransparency = on and 0.3 or 1})
+                if eye then eye.Image = DX:GetIcon(on and "eye-off" or "eye") or eye.Image end
+            end
+            Window:SetUserBlur(userConfig.Blur ~= false, true)
+        end
+        card.MouseButton1Click:Connect(function()
+            if private then Window:SetUserBlur(not Window.UserBlurred) end
+            SafeCall(userConfig.Callback, Window.UserBlurred)
+        end)
     end
 
     local content = New("Frame", {Name = "Content", Position = UDim2.fromOffset(sideWidth, 0), Size = UDim2.new(1, -sideWidth, 1, 0), BackgroundTransparency = 1, ClipsDescendants = true, Parent = body})
@@ -1996,6 +2137,20 @@ function DX:CreateWindow(config)
     Window.UpdateTitle = Window.SetTitle
     Window.UpdateSubtitle = Window.SetAuthor
 
+    function Window:SetBackground(image, transparency)
+        if transparency then backdropTransparency = transparency end
+        local resolved = image and image ~= "" and DX:GetIcon(image) or nil
+        backdrop.Visible = resolved ~= nil
+        backdrop.Image = resolved or ""
+        backdrop.ImageTransparency = 1
+        if resolved then Tween(backdrop, 0.5, {ImageTransparency = backdropTransparency}) end
+    end
+    function Window:SetBackgroundTransparency(value)
+        backdropTransparency = value
+        if backdrop.Visible then Tween(backdrop, 0.25, {ImageTransparency = value}) end
+    end
+    if config.Background then Window:SetBackground(config.Background) end
+
     local openButton = New("TextButton", {Name = "OpenButton", Text = "", AutoButtonColor = false, AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, -70), Size = UDim2.fromOffset(0, 42), AutomaticSize = AutoX, Theme = {BackgroundColor3 = "Background"}, Visible = false, ZIndex = 50, Parent = gui}, {
         Corner(Round),
         Padding(10, 18, 0, 0),
@@ -2061,11 +2216,13 @@ function DX:CreateWindow(config)
         openButton.Visible = false
         for _, connection in ipairs(Window.Connections) do pcall(function() connection:Disconnect() end) end
         if Window.CursorCleanup then Window.CursorCleanup() end
+        Window.AcrylicCleanup()
         for flag, element in pairs(DX.Flags) do
             if element.Window == Window then DX.Flags[flag] = nil end
         end
         local index = table.find(DX.Windows, Window)
         if index then table.remove(DX.Windows, index) end
+        SyncAcrylic()
         task.delay(0.3, function() gui:Destroy() end)
     end
     Window.Unload = Window.Destroy
