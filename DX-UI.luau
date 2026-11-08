@@ -1,5 +1,5 @@
 local DX = {
-    Version = "0.0.0.9",
+    Version = "0.0.1.0",
     Flags = {},
     Themes = {},
     Theme = "DX-SR",
@@ -129,29 +129,59 @@ local function OnGlass(hook, owner)
     hook(DX.Glass)
 end
 
-local GlassBlur
+local AcrylicEffect
+local AcrylicMuted = {}
+
+local function AcrylicQuality()
+    local ok, level = pcall(function() return UserSettings():GetService("UserGameSettings").SavedQualityLevel end)
+    return not ok or level.Value == 0 or level.Value >= 8
+end
 
 local function SyncGlassBlur()
-    local visible = false
-    if DX.Glass then
+    local on = false
+    if DX.Glass and AcrylicQuality() then
         for _, window in ipairs(DX.Windows) do
             if window.Opened and not window.Destroyed then
-                visible = true
+                on = true
                 break
             end
         end
     end
-    if visible and not GlassBlur then
-        GlassBlur = Instance.new("BlurEffect")
-        GlassBlur.Name = "DXGlassBlur"
-        GlassBlur.Size = 0
-        GlassBlur.Parent = Lighting
-        Tween(GlassBlur, 0.24, {Size = DX.IsMobile and 7 or 12})
-    elseif not visible and GlassBlur then
-        GlassBlur:Destroy()
-        GlassBlur = nil
+    if on and not (AcrylicEffect and AcrylicEffect.Parent) then
+        for _, holder in ipairs({Lighting, workspace.CurrentCamera}) do
+            for _, effect in ipairs(holder:GetChildren()) do
+                if effect:IsA("DepthOfFieldEffect") and effect.Enabled then
+                    AcrylicMuted[effect] = true
+                    effect.Enabled = false
+                end
+            end
+        end
+        if not AcrylicEffect then
+            AcrylicEffect = Instance.new("DepthOfFieldEffect")
+            AcrylicEffect.Name = "DXAcrylic"
+            AcrylicEffect.FarIntensity = 0
+            AcrylicEffect.InFocusRadius = 0.1
+            AcrylicEffect.NearIntensity = 1
+        end
+        AcrylicEffect.Parent = Lighting
+    elseif not on then
+        if AcrylicEffect then AcrylicEffect.Parent = nil end
+        for effect in pairs(AcrylicMuted) do pcall(function() effect.Enabled = true end) end
+        table.clear(AcrylicMuted)
     end
 end
+
+local function ResetGlassBlur()
+    if AcrylicEffect then AcrylicEffect.Parent = nil end
+    task.delay(0.5, SyncGlassBlur)
+end
+
+pcall(function()
+    UserSettings():GetService("UserGameSettings"):GetPropertyChangedSignal("SavedQualityLevel"):Connect(ResetGlassBlur)
+end)
+pcall(function()
+    settings().Rendering:GetPropertyChangedSignal("QualityLevel"):Connect(ResetGlassBlur)
+end)
 
 function DX:SetGlass(state)
     DX.Glass = state and true or false
@@ -1724,44 +1754,17 @@ local function CreateConfigManager(Window)
     return Manager
 end
 
-local TopbarPlus
-
-local function InLocalScriptContext(callback, ...)
-    local getIdentity = getthreadidentity or getidentity
-    local setIdentity = setthreadidentity or setidentity
-    if getIdentity and setIdentity then
-        local previous = getIdentity()
-        setIdentity(2)
-        local ok, result = pcall(callback, ...)
-        setIdentity(previous)
-        return ok, result
-    end
-    return pcall(callback, ...)
-end
-
-local function GetTopbarPlus()
-    if TopbarPlus then return TopbarPlus end
-    local storage = game:GetService("ReplicatedStorage")
-    local reference = storage:FindFirstChild("TopbarPlusReference")
-    local package = storage:FindFirstChild("TopbarPlus")
-    local module = reference and reference:IsA("ObjectValue") and reference.Value or (package and package:FindFirstChild("Icon"))
-    local asset
-    if not module then
-        local ok, objects = pcall(game.GetObjects, game, "rbxassetid://92368439343389")
-        if ok then
-            asset = objects[1]
-            module = asset and asset:FindFirstChild("Icon")
-            for index = 2, #objects do objects[index]:Destroy() end
+local function PlaceTopbarButtons()
+    local camera = workspace.CurrentCamera
+    if not camera then return end
+    local count = #DX.Windows
+    for slot, window in ipairs(DX.Windows) do
+        local button = window.TopbarButton
+        local holder = button and button.Parent
+        if holder and holder:IsA("ScreenGui") then
+            button.Position = UDim2.new(0, camera.ViewportSize.X / 2 - holder.AbsolutePosition.X + (slot - (count + 1) / 2) * 52, 0.5, 0)
         end
     end
-    if module and module:IsA("ModuleScript") then
-        local ok, library = InLocalScriptContext(require, module)
-        if ok and type(library) == "table" and type(library.new) == "function" then
-            TopbarPlus = library
-            return library
-        end
-    end
-    if asset then asset:Destroy() end
 end
 
 function DX:CreateWindow(config)
@@ -1808,18 +1811,48 @@ function DX:CreateWindow(config)
     local holder = New("Frame", {Name = "Window", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(0.5, 0, 0.5, GuiService:GetGuiInset().Y / 2), Size = size, BackgroundTransparency = 1, Visible = false, Parent = gui})
     local scale = New("UIScale", {Scale = Window.Scale, Parent = holder})
     local motion = New("Frame", {
-        Name = "Motion",
+        Name = "Fader",
         Size = UDim2.fromScale(1, 1),
         BackgroundTransparency = 1,
         Parent = holder,
     })
-    local canvas = not DX.IsMobile and New("CanvasGroup", {Name = "Fader", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, GroupTransparency = 1, Parent = motion})
-    local main = New("Frame", {Name = "Main", Size = UDim2.fromScale(1, 1), Theme = {BackgroundColor3 = "Background"}, Parent = canvas or motion}, {Corner(14), Stroke("Stroke")})
+    local canvas = not DX.IsMobile and New("CanvasGroup", {Name = "Fade", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, GroupTransparency = 1, Parent = motion})
+    local main = New("Frame", {Name = "Main", Size = UDim2.fromScale(1, 1), Theme = {BackgroundColor3 = "Background"}, Parent = motion}, {Corner(14), Stroke("Stroke")})
     local sheen = New("UIGradient", {Rotation = 35, Transparency = NumberSequence.new(0, 0.35), Parent = main})
     OnGlass(function(state) sheen.Enabled = state end, sheen)
     Frost(main, 14, 0.92)
     local backdrop = New("ImageLabel", {Name = "Backdrop", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Crop, Image = "", ImageTransparency = 1, Visible = false, ZIndex = 0, Parent = main}, {Corner(14)})
     local backdropTransparency = config.BackgroundImageTransparency or 0.5
+
+    local origin = New("Frame", {Name = "Origin", Size = UDim2.new(), BackgroundTransparency = 1, Parent = gui})
+    local blurPart = New("Part", {Name = "DXAcrylic", Material = Enum.Material.Glass, Color = Color3.new(0, 0, 0), Transparency = 0.98, Size = Vector3.new(1, 1, 0), Anchored = true, CanCollide = false, CanQuery = false, CanTouch = false, CastShadow = false})
+    local blurMesh = New("SpecialMesh", {MeshType = Enum.MeshType.Brick, Offset = Vector3.new(0, 0, -0.000001), Parent = blurPart})
+    local blurBind = "DXAcrylic" .. HttpService:GenerateGUID(false)
+    local function viewPoint(camera, point)
+        local ray = camera:ViewportPointToRay(point.X, point.Y)
+        return ray.Origin + ray.Direction * 0.001
+    end
+    RunService:BindToRenderStep(blurBind, Enum.RenderPriority.Camera.Value + 1, function()
+        local camera = workspace.CurrentCamera
+        if not (camera and AcrylicEffect and AcrylicEffect.Parent and Window.Opened and holder.Visible) then
+            blurPart.Parent = nil
+            return
+        end
+        local inset = 5 * scale.Scale
+        local position = main.AbsolutePosition - origin.AbsolutePosition + Vector2.new(inset, inset)
+        local extent = main.AbsoluteSize - Vector2.new(inset * 2, inset * 2)
+        local topLeft = viewPoint(camera, position)
+        local topRight = viewPoint(camera, position + Vector2.new(extent.X, 0))
+        local bottomRight = viewPoint(camera, position + extent)
+        local view = camera.CFrame
+        blurPart.CFrame = CFrame.fromMatrix((topLeft + bottomRight) / 2, view.XVector, view.YVector, view.ZVector)
+        blurMesh.Scale = Vector3.new((topRight - topLeft).Magnitude, (topRight - bottomRight).Magnitude, 0)
+        blurPart.Parent = camera
+    end)
+    table.insert(Window.Connections, {Disconnect = function()
+        pcall(function() RunService:UnbindFromRenderStep(blurBind) end)
+        blurPart:Destroy()
+    end})
 
     local topbar = New("Frame", {Name = "Topbar", Size = UDim2.new(1, 0, 0, topHeight), BackgroundTransparency = 1, ClipsDescendants = true, Parent = main})
     New("Frame", {Name = "Line", AnchorPoint = Vector2.new(0, 1), Position = UDim2.fromScale(0, 1), Size = UDim2.new(1, 0, 0, 1), Theme = {BackgroundColor3 = "Stroke"}, BorderSizePixel = 0, Parent = topbar})
@@ -2316,58 +2349,27 @@ function DX:CreateWindow(config)
     end
     if config.Background then Window:SetBackground(config.Background) end
 
-    local topbarIcon, topbarRelay, fallbackGui, fallbackButton, fallbackImage
-    local topbarLibrary = GetTopbarPlus()
-    if topbarLibrary then
-        local ok = InLocalScriptContext(function()
-            topbarIcon = topbarLibrary.new()
-            topbarIcon:setName("DX-" .. HttpService:GenerateGUID(false))
-            topbarIcon:setImage(118992150433803)
-            topbarIcon:setImageScale(0.64)
-            topbarIcon:setCornerRadius(Round)
-            topbarIcon:setLeft()
-            topbarIcon:setOrder(100)
-            topbarIcon:autoDeselect(false)
-            topbarIcon:setCaption(Window.Title)
-            if topbarIcon.setDestroyOnRespawn then
-                topbarIcon:setDestroyOnRespawn(false)
-            else
-                topbarIcon.destroyOnRespawn = false
-            end
-            if topbarIcon.setCloseOnOutsideClick then topbarIcon:setCloseOnOutsideClick(false) end
-        end)
-        if not ok and topbarIcon then
-            InLocalScriptContext(topbarIcon.destroy, topbarIcon)
-            topbarIcon = nil
-        end
-    end
-    if topbarIcon then
-        topbarRelay = Instance.new("BindableEvent")
-        table.insert(Window.Connections, topbarRelay.Event:Connect(function(selected)
-            if selected then Window:Open() else Window:Close() end
-        end))
-        topbarIcon.toggled:Connect(function(selected)
-            topbarRelay:Fire(selected)
-        end)
-        Window.TopbarIcon = topbarIcon
-        Window.TopbarButton = topbarIcon:getInstance("ClickRegion")
-    else
-        fallbackGui = ScreenGui("DX-UI-Topbar", 1001)
-        fallbackGui.ScreenInsets = Enum.ScreenInsets.TopbarSafeInsets
-        fallbackButton = New("TextButton", {
-            Name = "DXTopbarIcon",
-            Text = "",
-            AutoButtonColor = false,
-            AnchorPoint = Vector2.new(1, 0.5),
-            Position = UDim2.new(1, -8 - (#DX.Windows - 1) * 44, 0.5, 0),
-            Size = UDim2.fromOffset(38, 38),
-            Theme = {BackgroundColor3 = "Background"},
-            Parent = fallbackGui,
-        }, {Corner(Round)})
-        fallbackImage = Icon(118992150433803, 24, nil, {AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Parent = fallbackButton})
-        fallbackButton.Activated:Connect(function() Window:Toggle() end)
-        Window.TopbarButton = fallbackButton
-    end
+    local topbarGui = ScreenGui("DX-UI-Topbar", 2147483647)
+    topbarGui.ScreenInsets = Enum.ScreenInsets.TopbarSafeInsets
+    local topbarButton = New("TextButton", {
+        Name = "DXTopbarIcon",
+        Text = "",
+        AutoButtonColor = false,
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        Position = UDim2.fromScale(0.5, 0.5),
+        Size = UDim2.fromOffset(44, 44),
+        BackgroundColor3 = Color3.new(0, 0, 0),
+        BackgroundTransparency = 0.3,
+        Parent = topbarGui,
+    }, {Corner(Round)})
+    local topbarImage = Icon(118992150433803, 28, nil, {AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Parent = topbarButton})
+    topbarButton.MouseEnter:Connect(function() Tween(topbarButton, 0.15, {BackgroundTransparency = 0.1}) end)
+    topbarButton.MouseLeave:Connect(function() Tween(topbarButton, 0.15, {BackgroundTransparency = 0.3}) end)
+    topbarButton.Activated:Connect(function() Window:Toggle() end)
+    Window.TopbarButton = topbarButton
+    table.insert(Window.Connections, topbarGui:GetPropertyChangedSignal("AbsolutePosition"):Connect(PlaceTopbarButtons))
+    table.insert(Window.Connections, topbarGui:GetPropertyChangedSignal("AbsoluteSize"):Connect(PlaceTopbarButtons))
+    PlaceTopbarButtons()
 
     local function fire(list, ...)
         for _, callback in ipairs(list) do SafeCall(callback, ...) end
@@ -2384,7 +2386,6 @@ function DX:CreateWindow(config)
         local duration = DX.IsMobile and 0.20 or 0.32
         slideTween = Tween(motion, duration, {Position = UDim2.fromOffset(0, 0)})
         if canvas then FadeThrough(canvas, main, motion, duration, 0) end
-        if topbarIcon and not topbarIcon.isSelected then topbarIcon:select("DXWindow") end
         SyncGlassBlur()
         fire(Window.Events.Open)
     end
@@ -2403,7 +2404,6 @@ function DX:CreateWindow(config)
                 holder.Visible = false
             end
         end)
-        if topbarIcon and topbarIcon.isSelected then topbarIcon:deselect("DXWindow") end
         SyncGlassBlur()
         fire(Window.Events.Close)
     end
@@ -2448,9 +2448,7 @@ function DX:CreateWindow(config)
         if Window.Destroyed then return end
         Window.Destroyed = true
         Window:Close()
-        if topbarIcon then InLocalScriptContext(topbarIcon.destroy, topbarIcon) end
-        if topbarRelay then topbarRelay:Destroy() end
-        if fallbackGui then fallbackGui:Destroy() end
+        topbarGui:Destroy()
         for _, connection in ipairs(Window.Connections) do pcall(function() connection:Disconnect() end) end
         if Window.CursorCleanup then Window.CursorCleanup() end
         for flag, element in pairs(DX.Flags) do
@@ -2458,11 +2456,7 @@ function DX:CreateWindow(config)
         end
         local index = table.find(DX.Windows, Window)
         if index then table.remove(DX.Windows, index) end
-        for slot, window in ipairs(DX.Windows) do
-            if window.TopbarButton and not window.TopbarIcon then
-                window.TopbarButton.Position = UDim2.new(1, -8 - (slot - 1) * 44, 0.5, 0)
-            end
-        end
+        PlaceTopbarButtons()
         SyncGlassBlur()
         fire(Window.Events.Destroy)
         task.delay(0.3, function() gui:Destroy() end)
@@ -2605,16 +2599,13 @@ function DX:CreateWindow(config)
 
     function Window:EditOpenButton(options)
         options = options or {}
-        if topbarIcon and options.Title then topbarIcon:setCaption(options.Title) end
         if options.Icon then
             local image = DX:GetIcon(options.Icon)
-            if image and topbarIcon then topbarIcon:setImage(image) end
-            if image and fallbackImage then fallbackImage.Image = image end
+            if image and topbarImage then topbarImage.Image = image end
         end
         if options.Enabled ~= nil then
             Window.OpenButtonEnabled = options.Enabled ~= false
-            if topbarIcon then topbarIcon:setEnabled(Window.OpenButtonEnabled) end
-            if fallbackButton then fallbackButton.Visible = Window.OpenButtonEnabled end
+            topbarButton.Visible = Window.OpenButtonEnabled
         end
     end
 

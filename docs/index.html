@@ -325,7 +325,7 @@ td { color: var(--muted); }
 <header class="topnav">
   <div class="brand">
     <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#3B82F6"/></linearGradient></defs><path d="M4 6h8.5c6 0 10 4 10 10s-4 10-10 10H4z" fill="none" stroke="url(#g)" stroke-width="3" stroke-linejoin="round"/><path d="M17 6l11 20M28 6L17 26" stroke="url(#g)" stroke-width="3" stroke-linecap="round"/></svg>
-    DX-UI <small>v0.0.0.8</small>
+    DX-UI <small>v0.0.1.0</small>
   </div>
   <div class="themes" role="group" aria-label="Preview theme">
     <button type="button" data-theme-set="DX-SR" aria-pressed="true"><i style="background:linear-gradient(90deg,#3B82F6,#22D3EE)"></i>DX-SR</button>
@@ -385,7 +385,7 @@ td { color: var(--muted); }
             <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><path d="M4 6h8.5c6 0 10 4 10 10s-4 10-10 10H4z" fill="none" stroke="var(--dx-accent2)" stroke-width="3" stroke-linejoin="round"/><path d="M17 6l11 20M28 6L17 26" stroke="var(--dx-accent)" stroke-width="3" stroke-linecap="round"/></svg>
             <div class="win-title"><b>DX-SR Hub</b><span>Professional Hub</span></div>
             <div class="dx-tags">
-              <span class="dx-tag" style="--c:#30FF6A"><i data-lucide="github"></i>v0.0.0.8</span>
+              <span class="dx-tag" style="--c:#30FF6A"><i data-lucide="github"></i>v0.0.1.0</span>
               <span class="dx-tag" style="--c:#FBBF24"><i data-lucide="crown"></i>Premium</span>
             </div>
             <div class="win-ctrl">
@@ -450,13 +450,13 @@ td { color: var(--muted); }
 
     <section class="doc" id="window">
       <h2><i data-lucide="app-window"></i>Window</h2>
-      <p>The window holds the topbar, the sidebar and the tab pages. It opens with a pop-in animation, can be dragged by the topbar, resized from the bottom-right corner, and is hidden or shown with the toggle key.</p>
+      <p>The window holds the topbar, the sidebar and the tab pages. It opens with a pop-in animation, can be dragged by the topbar, resized from the bottom-right corner, and is hidden or shown with the toggle key or the round open button in the middle of the Roblox topbar. That button sits above every game GUI, including full-screen overlays.</p>
       <p>Every instance is named after what it holds, such as <code class="inline">[Group] Main</code>, <code class="inline">[Tab] Farming</code>, <code class="inline">[Section] Auto Farm</code> and <code class="inline">[Toggle] Auto Farm</code>, so the explorer reads like a set of folders.</p>
       <div class="codebox solo"><pre data-code="window"></pre></div>
       <div class="table-wrap"><table>
         <thead><tr><th>Option</th><th>Type</th><th>Description</th></tr></thead>
         <tbody>
-          <tr><td>Title</td><td>string</td><td>Name in the topbar and on the floating open button.</td></tr>
+          <tr><td>Title</td><td>string</td><td>Name in the topbar.</td></tr>
           <tr><td>Author</td><td>string</td><td>Small line under the title.</td></tr>
           <tr><td>Icon</td><td>string</td><td>Lucide name, rbxassetid, rbxthumb or asset id number.</td></tr>
           <tr><td>Folder</td><td>string</td><td>Workspace folder for configs. Default <code class="inline">"DX-UI"</code>.</td></tr>
@@ -478,13 +478,13 @@ td { color: var(--muted); }
         </tbody>
       </table></div>
       <h3>Window methods</h3>
-      <div class="methods"><code>:Tab()</code><code>:Section()</code><code>:Tag()</code><code>:SelectTab(tab | index)</code><code>:SetTitle()</code><code>:SetAuthor()</code><code>:Open()</code><code>:Close()</code><code>:Toggle()</code><code>:GetState()</code><code>:SetToggleKey()</code><code>:OnOpen(fn)</code><code>:OnClose(fn)</code><code>:OnDestroy(fn)</code><code>:Dialog()</code><code>:Notify()</code><code>:SetGlass(bool)</code><code>:SetScale(n)</code><code>:Divider()</code><code>:Space()</code><code>:EditOpenButton({Title, Icon, Enabled})</code><code>:SetBackground(image, transparency?)</code><code>:SetBackgroundTransparency(n)</code><code>:SetUserBlur(bool)</code><code>.UserBlurred</code><code>.Hovering</code><code>:LockAll()</code><code>:UnlockAll()</code><code>:Destroy()</code></div>
+      <div class="methods"><code>:Tab()</code><code>:Section()</code><code>:Tag()</code><code>:SelectTab(tab | index)</code><code>:SetTitle()</code><code>:SetAuthor()</code><code>:Open()</code><code>:Close()</code><code>:Toggle()</code><code>:GetState()</code><code>:SetToggleKey()</code><code>:OnOpen(fn)</code><code>:OnClose(fn)</code><code>:OnDestroy(fn)</code><code>:Dialog()</code><code>:Notify()</code><code>:SetGlass(bool)</code><code>:SetScale(n)</code><code>:Divider()</code><code>:Space()</code><code>:EditOpenButton({Icon, Enabled})</code><code>:SetBackground(image, transparency?)</code><code>:SetBackgroundTransparency(n)</code><code>:SetUserBlur(bool)</code><code>.UserBlurred</code><code>.Hovering</code><code>:LockAll()</code><code>:UnlockAll()</code><code>:Destroy()</code></div>
     </section>
 
     <section class="doc" id="tag">
       <h2><i data-lucide="tag"></i>Tag</h2>
       <p>Small colored badges next to the window title, for a version number or a plan name. They pop in when created.</p>
-      <div class="stage"><span class="stage-label">Preview</span><div class="dx dx-tags" id="tag-demo"><span class="dx-tag" style="--c:#30FF6A"><i data-lucide="github"></i>v0.0.0.8</span><span class="dx-tag" style="--c:#FBBF24"><i data-lucide="crown"></i>Premium</span><span class="dx-tag" style="--c:#22D3EE"><i data-lucide="sparkles"></i>Beta</span></div></div>
+      <div class="stage"><span class="stage-label">Preview</span><div class="dx dx-tags" id="tag-demo"><span class="dx-tag" style="--c:#30FF6A"><i data-lucide="github"></i>v0.0.1.0</span><span class="dx-tag" style="--c:#FBBF24"><i data-lucide="crown"></i>Premium</span><span class="dx-tag" style="--c:#22D3EE"><i data-lucide="sparkles"></i>Beta</span></div></div>
       <div class="codebox"><pre data-code="tag"></pre></div>
       <div class="methods"><code>:SetTitle(text)</code><code>:SetColor(Color3)</code><code>:Destroy()</code></div>
     </section>
@@ -868,7 +868,7 @@ window: `local Window = DX:CreateWindow({
     Background = "rbxassetid://136921327637425",
     Glass = true,
 })`,
-tag: `Window:Tag({Title = "v0.0.0.8", Icon = "github", Color = Color3.fromHex("#30FF6A")})
+tag: `Window:Tag({Title = "v0.0.1.0", Icon = "github", Color = Color3.fromHex("#30FF6A")})
 Window:Tag({Title = "Premium", Icon = "crown", Color = Color3.fromHex("#FBBF24")})`,
 user: `local Window = DX:CreateWindow({
     Title = "Example Hub",
