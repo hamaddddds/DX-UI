@@ -325,7 +325,7 @@ td { color: var(--muted); }
 <header class="topnav">
   <div class="brand">
     <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#3B82F6"/></linearGradient></defs><path d="M4 6h8.5c6 0 10 4 10 10s-4 10-10 10H4z" fill="none" stroke="url(#g)" stroke-width="3" stroke-linejoin="round"/><path d="M17 6l11 20M28 6L17 26" stroke="url(#g)" stroke-width="3" stroke-linecap="round"/></svg>
-    DX-UI <small>v0.0.1.0</small>
+    DX-UI <small>v0.0.1.1</small>
   </div>
   <div class="themes" role="group" aria-label="Preview theme">
     <button type="button" data-theme-set="DX-SR" aria-pressed="true"><i style="background:linear-gradient(90deg,#3B82F6,#22D3EE)"></i>DX-SR</button>
@@ -385,7 +385,7 @@ td { color: var(--muted); }
             <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><path d="M4 6h8.5c6 0 10 4 10 10s-4 10-10 10H4z" fill="none" stroke="var(--dx-accent2)" stroke-width="3" stroke-linejoin="round"/><path d="M17 6l11 20M28 6L17 26" stroke="var(--dx-accent)" stroke-width="3" stroke-linecap="round"/></svg>
             <div class="win-title"><b>DX-SR Hub</b><span>Professional Hub</span></div>
             <div class="dx-tags">
-              <span class="dx-tag" style="--c:#30FF6A"><i data-lucide="github"></i>v0.0.1.0</span>
+              <span class="dx-tag" style="--c:#30FF6A"><i data-lucide="github"></i>v0.0.1.1</span>
               <span class="dx-tag" style="--c:#FBBF24"><i data-lucide="crown"></i>Premium</span>
             </div>
             <div class="win-ctrl">
@@ -462,7 +462,8 @@ td { color: var(--muted); }
           <tr><td>Folder</td><td>string</td><td>Workspace folder for configs. Default <code class="inline">"DX-UI"</code>.</td></tr>
           <tr><td>Size</td><td>UDim2</td><td>Offset size. Default 660 × 460, clamped to the screen.</td></tr>
           <tr><td>MinSize / MaxSize</td><td>Vector2</td><td>Resize limits. Default 520 × 340 and 960 × 680.</td></tr>
-          <tr><td>ToggleKey</td><td>Enum.KeyCode</td><td>Key that hides and shows the window. Default RightShift.</td></tr>
+          <tr><td>ToggleKey</td><td>Enum.KeyCode</td><td>Ignored. The window always toggles with RightShift; use :SetToggleKey() to change it at runtime.</td></tr>
+          <tr><td>OpenTitle / OpenIcon</td><td>string</td><td>Text and icon of the floating open button shown while the window is closed. Defaults to the window title and the DX logo.</td></tr>
           <tr><td>Theme</td><td>string</td><td>Starting theme name.</td></tr>
           <tr><td>SideBarWidth</td><td>number</td><td>Sidebar width in pixels. Default 200.</td></tr>
           <tr><td>HideSearchBar</td><td>boolean</td><td>Removes the tab search field.</td></tr>
@@ -478,13 +479,13 @@ td { color: var(--muted); }
         </tbody>
       </table></div>
       <h3>Window methods</h3>
-      <div class="methods"><code>:Tab()</code><code>:Section()</code><code>:Tag()</code><code>:SelectTab(tab | index)</code><code>:SetTitle()</code><code>:SetAuthor()</code><code>:Open()</code><code>:Close()</code><code>:Toggle()</code><code>:GetState()</code><code>:SetToggleKey()</code><code>:OnOpen(fn)</code><code>:OnClose(fn)</code><code>:OnDestroy(fn)</code><code>:Dialog()</code><code>:Notify()</code><code>:SetGlass(bool)</code><code>:SetScale(n)</code><code>:Divider()</code><code>:Space()</code><code>:EditOpenButton({Icon, Enabled})</code><code>:SetBackground(image, transparency?)</code><code>:SetBackgroundTransparency(n)</code><code>:SetUserBlur(bool)</code><code>.UserBlurred</code><code>.Hovering</code><code>:LockAll()</code><code>:UnlockAll()</code><code>:Destroy()</code></div>
+      <div class="methods"><code>:Tab()</code><code>:Section()</code><code>:Tag()</code><code>:SelectTab(tab | index)</code><code>:SetTitle()</code><code>:SetAuthor()</code><code>:Open()</code><code>:Close()</code><code>:Toggle()</code><code>:GetState()</code><code>:SetToggleKey()</code><code>:OnOpen(fn)</code><code>:OnClose(fn)</code><code>:OnDestroy(fn)</code><code>:Dialog()</code><code>:Notify()</code><code>:SetGlass(bool)</code><code>:SetScale(n)</code><code>:Divider()</code><code>:Space()</code><code>:EditOpenButton({Title, Icon, Enabled})</code><code>:SetBackground(image, transparency?)</code><code>:SetBackgroundTransparency(n)</code><code>:SetUserBlur(bool)</code><code>.UserBlurred</code><code>.Hovering</code><code>:LockAll()</code><code>:UnlockAll()</code><code>:Destroy()</code></div>
     </section>
 
     <section class="doc" id="tag">
       <h2><i data-lucide="tag"></i>Tag</h2>
       <p>Small colored badges next to the window title, for a version number or a plan name. They pop in when created.</p>
-      <div class="stage"><span class="stage-label">Preview</span><div class="dx dx-tags" id="tag-demo"><span class="dx-tag" style="--c:#30FF6A"><i data-lucide="github"></i>v0.0.1.0</span><span class="dx-tag" style="--c:#FBBF24"><i data-lucide="crown"></i>Premium</span><span class="dx-tag" style="--c:#22D3EE"><i data-lucide="sparkles"></i>Beta</span></div></div>
+      <div class="stage"><span class="stage-label">Preview</span><div class="dx dx-tags" id="tag-demo"><span class="dx-tag" style="--c:#30FF6A"><i data-lucide="github"></i>v0.0.1.1</span><span class="dx-tag" style="--c:#FBBF24"><i data-lucide="crown"></i>Premium</span><span class="dx-tag" style="--c:#22D3EE"><i data-lucide="sparkles"></i>Beta</span></div></div>
       <div class="codebox"><pre data-code="tag"></pre></div>
       <div class="methods"><code>:SetTitle(text)</code><code>:SetColor(Color3)</code><code>:Destroy()</code></div>
     </section>
@@ -868,7 +869,7 @@ window: `local Window = DX:CreateWindow({
     Background = "rbxassetid://136921327637425",
     Glass = true,
 })`,
-tag: `Window:Tag({Title = "v0.0.1.0", Icon = "github", Color = Color3.fromHex("#30FF6A")})
+tag: `Window:Tag({Title = "v0.0.1.1", Icon = "github", Color = Color3.fromHex("#30FF6A")})
 Window:Tag({Title = "Premium", Icon = "crown", Color = Color3.fromHex("#FBBF24")})`,
 user: `local Window = DX:CreateWindow({
     Title = "Example Hub",

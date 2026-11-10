@@ -1,5 +1,5 @@
 local DX = {
-    Version = "0.0.1.0",
+    Version = "0.0.1.1",
     Flags = {},
     Themes = {},
     Theme = "DX-SR",
@@ -1754,19 +1754,6 @@ local function CreateConfigManager(Window)
     return Manager
 end
 
-local function PlaceTopbarButtons()
-    local camera = workspace.CurrentCamera
-    if not camera then return end
-    local count = #DX.Windows
-    for slot, window in ipairs(DX.Windows) do
-        local button = window.TopbarButton
-        local holder = button and button.Parent
-        if holder and holder:IsA("ScreenGui") then
-            button.Position = UDim2.new(0, camera.ViewportSize.X / 2 - holder.AbsolutePosition.X + (slot - (count + 1) / 2) * 52, 0.5, 0)
-        end
-    end
-end
-
 function DX:CreateWindow(config)
     config = config or {}
     if config.Theme and DX.Themes[config.Theme] then DX.Theme = config.Theme end
@@ -2349,27 +2336,36 @@ function DX:CreateWindow(config)
     end
     if config.Background then Window:SetBackground(config.Background) end
 
-    local topbarGui = ScreenGui("DX-UI-Topbar", 2147483647)
-    topbarGui.ScreenInsets = Enum.ScreenInsets.TopbarSafeInsets
-    local topbarButton = New("TextButton", {
-        Name = "DXTopbarIcon",
-        Text = "",
-        AutoButtonColor = false,
-        AnchorPoint = Vector2.new(0.5, 0.5),
-        Position = UDim2.fromScale(0.5, 0.5),
-        Size = UDim2.fromOffset(44, 44),
-        BackgroundColor3 = Color3.new(0, 0, 0),
-        BackgroundTransparency = 0.3,
-        Parent = topbarGui,
-    }, {Corner(Round)})
-    local topbarImage = Icon(118992150433803, 28, nil, {AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Parent = topbarButton})
-    topbarButton.MouseEnter:Connect(function() Tween(topbarButton, 0.15, {BackgroundTransparency = 0.1}) end)
-    topbarButton.MouseLeave:Connect(function() Tween(topbarButton, 0.15, {BackgroundTransparency = 0.3}) end)
-    topbarButton.Activated:Connect(function() Window:Toggle() end)
-    Window.TopbarButton = topbarButton
-    table.insert(Window.Connections, topbarGui:GetPropertyChangedSignal("AbsolutePosition"):Connect(PlaceTopbarButtons))
-    table.insert(Window.Connections, topbarGui:GetPropertyChangedSignal("AbsoluteSize"):Connect(PlaceTopbarButtons))
-    PlaceTopbarButtons()
+    local openGui = ScreenGui("DX-UI-Open", 2147483647)
+    local openY = 14
+    local openButton = New("TextButton", {Name = "OpenButton", Text = "", AutoButtonColor = false, AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, -70), Size = UDim2.fromOffset(0, 42), AutomaticSize = AutoX, Theme = {BackgroundColor3 = "Background"}, Visible = false, Parent = openGui}, {
+        Corner(Round),
+        Padding(10, 18, 0, 0),
+        List(10, Horizontal, nil, Enum.VerticalAlignment.Center),
+    })
+    local openStroke = New("UIStroke", {Thickness = 1.5, Color = Color3.new(1, 1, 1), Parent = openButton})
+    TweenService:Create(AccentGradient(openStroke, 0), TweenInfo.new(4, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1), {Rotation = 360}):Play()
+    local openIconHolder = New("Frame", {Name = "Icon", Size = UDim2.fromOffset(26, 26), BackgroundTransparency = 1, LayoutOrder = 1, Parent = openButton})
+    local openIcon = Icon(config.OpenIcon or 118992150433803, 24, nil, {AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Parent = openIconHolder})
+    local openTitle = Text({Text = config.OpenTitle or Window.Title, TextSize = 14, FontFace = GetFont(Weight.SemiBold), Size = UDim2.fromOffset(0, 42), AutomaticSize = AutoX, LayoutOrder = 2, Parent = openButton})
+    local openPointer, openStart, openOrigin, openDragged
+    openButton.InputBegan:Connect(function(input)
+        if not IsPress(input) then return end
+        openPointer, openStart, openOrigin, openDragged = input, PointerPosition(input), openButton.Position, false
+    end)
+    table.insert(Window.Connections, UserInputService.InputChanged:Connect(function(input)
+        if not MovesPointer(openPointer, input) then return end
+        local delta = PointerPosition(input) - openStart
+        if not openDragged and delta.Magnitude < 6 then return end
+        openDragged = true
+        openButton.Position = UDim2.new(openOrigin.X.Scale, openOrigin.X.Offset + delta.X, 0, openOrigin.Y.Offset + delta.Y)
+        openY = openButton.Position.Y.Offset
+    end))
+    table.insert(Window.Connections, UserInputService.InputEnded:Connect(function(input)
+        if not EndsPointer(openPointer, input) then return end
+        openPointer = nil
+        if not openDragged then Window:Open() end
+    end))
 
     local function fire(list, ...)
         for _, callback in ipairs(list) do SafeCall(callback, ...) end
@@ -2386,6 +2382,7 @@ function DX:CreateWindow(config)
         local duration = DX.IsMobile and 0.20 or 0.32
         slideTween = Tween(motion, duration, {Position = UDim2.fromOffset(0, 0)})
         if canvas then FadeThrough(canvas, main, motion, duration, 0) end
+        openButton.Visible = false
         SyncGlassBlur()
         fire(Window.Events.Open)
     end
@@ -2404,6 +2401,11 @@ function DX:CreateWindow(config)
                 holder.Visible = false
             end
         end)
+        if not Window.Destroyed and Window.OpenButtonEnabled ~= false then
+            openButton.Position = UDim2.new(openButton.Position.X.Scale, openButton.Position.X.Offset, 0, -70)
+            openButton.Visible = true
+            Tween(openButton, 0.45, {Position = UDim2.new(openButton.Position.X.Scale, openButton.Position.X.Offset, 0, openY)}, Enum.EasingStyle.Back)
+        end
         SyncGlassBlur()
         fire(Window.Events.Close)
     end
@@ -2440,15 +2442,13 @@ function DX:CreateWindow(config)
     function Window:OnToggleKeyChanged(callback) table.insert(self.Events.ToggleKeyChanged, callback) end
     Window.SetKeybind = Window.SetToggleKey
     Window.GetKeybind = Window.GetToggleKey
-    local configuredKey = config.ToggleKey
-    if configuredKey == nil then configuredKey = config.Keybind end
-    if configuredKey ~= nil then Window:SetToggleKey(configuredKey) end
+
 
     function Window:Destroy()
         if Window.Destroyed then return end
         Window.Destroyed = true
         Window:Close()
-        topbarGui:Destroy()
+        openGui:Destroy()
         for _, connection in ipairs(Window.Connections) do pcall(function() connection:Disconnect() end) end
         if Window.CursorCleanup then Window.CursorCleanup() end
         for flag, element in pairs(DX.Flags) do
@@ -2456,7 +2456,6 @@ function DX:CreateWindow(config)
         end
         local index = table.find(DX.Windows, Window)
         if index then table.remove(DX.Windows, index) end
-        PlaceTopbarButtons()
         SyncGlassBlur()
         fire(Window.Events.Destroy)
         task.delay(0.3, function() gui:Destroy() end)
@@ -2599,13 +2598,14 @@ function DX:CreateWindow(config)
 
     function Window:EditOpenButton(options)
         options = options or {}
+        if options.Title then openTitle.Text = options.Title end
         if options.Icon then
             local image = DX:GetIcon(options.Icon)
-            if image and topbarImage then topbarImage.Image = image end
+            if image and openIcon then openIcon.Image = image end
         end
         if options.Enabled ~= nil then
             Window.OpenButtonEnabled = options.Enabled ~= false
-            topbarButton.Visible = Window.OpenButtonEnabled
+            if not Window.OpenButtonEnabled then openButton.Visible = false end
         end
     end
 
